@@ -71,7 +71,10 @@ workflow ANALYSE_RUN {
         MERGE_RESULT_FILES( result_files, merge_result_files)
     }
 
-    SUMMARIZE_RESULTS( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
+    SUMMARIZE_RESULTS_PLASMID_FILTERED( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
+    SUMMARIZE_RESULTS_PLASMID( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
+    SUMMARIZE_RESULTS_NGS_FILTERED( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
+    SUMMARIZE_RESULTS_NGS( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
 
 
 
