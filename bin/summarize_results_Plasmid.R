@@ -4,73 +4,29 @@ library(readr)
 library(jsonlite)
 library(tidyverse)
 library(BlandAltmanLeh)
+library(argparser)
 
-### set result folder (output folder)
-args <- commandArgs(TRUE)
-if (!is.null(args[1])) {
-  result_folder <- args[1]
-  print(result_folder)
-}
+parser <- arg_parser("Commandline parser")
+parser <- add_argument(
+  parser,
+  "--UMI_Plasmid_Samples",
+  help = "Merged UMI summary files"
+)
+parser <- add_argument(
+  parser,
+  "--mutation_classification",
+  help = "Merged UMI summary files"
+)
 
-result_folder <- "results_all/"
+argv <- parse_args(parser)
+UMI_Plasmid_Samples <- argv$UMI_Plasmid_Samples
+mutation_classification <- argv$mutation_classification
 
-### Create dirs
-dir_figures <- "figures"
-dir_NGS <- "NGS"
-dir_Plasmid <- "Plasmid"
-dir_filtered <- "filtered"
-dir_raw <- "raw"
-dir_reads_vs_cons_consensus_sequences <- "reads_vs_cons_consensus_sequences"
-dir_Bland_Altman <- "bland_Altman"
-dir_compare_NGS_vs_UMI_per_position <- "compare_variant_level_NGS_vs_UMI_per_position"
-dir_compare_NGS_vs_UMI <- "compare_variant_level_NGS_vs_UMI"
-dir_density_NGS_vs_UMI <- "density_mutation_levels_NGS_vs_UMI"
-dir_density <- "density_mutation_levels"
-dir_variance_per_pos <- "variance_per_pos"
-dir_detected_mutations <- "detected_mutations"
 
-if(!dir.exists(paste(result_folder, dir_figures, sep = "/"))) {
-  
-  #reads_vs_cons
-  dir.create(paste(result_folder, dir_figures, dir_reads_vs_cons_consensus_sequences, sep = "/"), recursive = TRUE)
-  
-  # NGS
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_NGS, dir_Bland_Altman, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_NGS, dir_compare_NGS_vs_UMI_per_position, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_NGS, dir_compare_NGS_vs_UMI, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_NGS, dir_density_NGS_vs_UMI, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_NGS, dir_Bland_Altman, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_NGS, dir_compare_NGS_vs_UMI_per_position, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_NGS, dir_compare_NGS_vs_UMI, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_NGS, dir_density_NGS_vs_UMI, sep = "/"), recursive = TRUE)
-  
-  #Plasmid
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_Plasmid, dir_variance_per_pos, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_Plasmid, dir_density, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_raw, dir_Plasmid, dir_detected_mutations, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_Plasmid, dir_variance_per_pos, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_Plasmid, dir_density, sep = "/"), recursive = TRUE)
-  dir.create(paste(result_folder, dir_figures, dir_filtered, dir_Plasmid, dir_detected_mutations, sep = "/"), recursive = TRUE)
-}
-
-### Set parameters
-STR_start <- 2472
-STR_end <- 2505
-
-### load data
-NGS_data <-
-  read.csv(paste(result_folder, 'temp_all_NGS.csv', sep = "/"))
-NGS_data_filtered <-
-  read.csv(paste(result_folder, 'temp_all_NGS_filtered.csv', sep = "/"))
 UMI_data <-
-  read.csv(paste(result_folder, 'temp_all_UMI.csv', sep = "/"))
-UMI_data_filtered <-
-  read.csv(paste(result_folder, 'temp_all_UMI_filtered.csv', sep = "/"))
-run_info <- read.csv('info/Status_overview.csv', header = TRUE) %>%
-  select('Sequenced_with', 'Run_directory') %>%
-  dplyr::rename(device = Sequenced_with)
+  read_tsv(UMI_Plasmid_Samples)
 plasmid_expected_mutations <-
-  read.csv("data_ngs/plasmid_expected_muts.csv") %>%
+  read.csv(mutation_classification) %>%
   mutate(
     Position = as.numeric(as.character(Position)),
     Corresponding_Position = as.numeric(as.character(Corresponding_Position))

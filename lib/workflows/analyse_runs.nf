@@ -17,8 +17,10 @@ for (param in requiredParams) {
 merge_result_files = file("../bin/merge_result_files.R", checkIfExists: true)
 summarize_UMI_run_mutserve_ngs_data = file("../bin/summarize_UMI_run_mutserve_ngs_data.R", checkIfExists: true)
 summarize_results = file("../bin/summarize_results.R", checkIfExists: true)
+num_of_read_vs_bam_files = file("../bin/num_of_read_vs_bam_files.R", checkIfExists: true)
 
 ngs_data = file("${params.ngs_data}", checkIfExists: true)
+expected_mutations = file("${params.expected_mutations}", checkIfExists: true)
 
 
 // STAGE CHANNELS
@@ -57,8 +59,8 @@ workflow ANALYSE_RUN {
     SUMMARIZE_RUN( run_summaries, summarize_UMI_run_mutserve_ngs_data )
 
     if(params.merge_result_files){
-        SUMMARIZE_RUN.out.summarize_results
-        .map{ run, summaries -> run}
+        SUMMARIZE_RUN.out.umi_all_tsv
+        .map{ run, umi_all_tsv -> umi_all_tsv}
         .collect()
         .set{ result_files }
 

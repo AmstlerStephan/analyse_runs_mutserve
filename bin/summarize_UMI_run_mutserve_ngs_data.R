@@ -125,7 +125,8 @@ NGS_UMI_Samples <- NGS_Samples %>%
     ref_NGS = ref, 
     num_of_consensus_sequences = `COV-TOTAL`,
     variant_UMI = Variant_UMI,
-    variant_level_UMI = Variant_level_UMI 
+    variant_level_UMI = Variant_level_UMI,
+    Q_score = mean_qual
   ) %>%
   select(
     sample,
@@ -156,12 +157,11 @@ NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
   filter(variant_NGS != 'D')
 
 
-write.csv(UMI, 'UMI_sequencing_mutserve.csv')
-write.csv(UMI_plasmids, 'UMI_sequencing_plasmids_mutserve.csv')
-write.csv(UMI_plasmids_filtered, 'UMI_sequencing_filtered_plasmids_mutserve.csv')
-#write.csv(mutserve_combined, paste(run_path, 'mutserve_UMI_combined.csv', sep = ''))
-write.csv(NGS_UMI_Samples, paste(run_path, 'NGS_UMI_samples.csv', sep = ''))
-write.csv(NGS_UMI_Samples_filtered, paste(run_path, 'NGS_UMI_samples_filtered.csv', sep = ''))
+write_tsv(UMI, 'UMI_sequencing_mutserve.tsv')
+write_tsv(UMI_plasmids, 'UMI_sequencing_mutserve_plasmids.tsv')
+write_tsv(UMI_plasmids_filtered, 'UMI_sequencing_mutserve_plasmids_filtered.tsv')
+write_tsv(NGS_UMI_Samples, paste(run_path, 'NGS_UMI_samples.tsv', sep = ''))
+write_tsv(NGS_UMI_Samples_filtered, paste(run_path, 'NGS_UMI_samples_filtered.tsv', sep = ''))
 
 
 
