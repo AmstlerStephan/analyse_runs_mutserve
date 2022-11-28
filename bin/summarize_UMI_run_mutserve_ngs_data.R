@@ -8,8 +8,8 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--run_path",
-  help = "Run directory"
+  "--run",
+  help = "Run"
 )
 parser <- add_argument(
   parser,
@@ -41,14 +41,13 @@ UMI_cutoff <- 0.003
 sample_sets <- c("AK|SAPHIR")
 SAPHIR_samples <- c("4612|4901|4451|4624|4864|5248|5538|5400")
 AK_samples <- c("AK03|AK07|AK14|AK17|AK33")
-# 
+
+
 # run_path <- "~/UMI_LPA_KIV2/run7/"
 # nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run7/run7_0_0.tsv"
 # mutserve_summary <- "~/UMI_LPA_KIV2/run7/mutserve/run7_summary_mutserve.txt"
 # bed_file <- "~/UMI_LPA_KIV2/run7/ont_pl/barcode01/targets.bed"
 # ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR_mutation_classification.csv"
-
-run <- str_extract(run_path, "run\\d*_*[[:alnum:]]*")
 
 mutserve_summary <-
   read_tsv(mutserve_summary, na = c('', 'NA', '-'))
@@ -86,7 +85,7 @@ mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_varia
 UMI <- mutserve_combined %>%
   inner_join(barcodes, by = c('barcode'))
 
-UMI_readable <- UMI %>%
+UMI_plasmids <- UMI %>%
   filter(grepl('A_B', sample)) %>%
   separate(sample,
            c(NA, NA, 'Percent_A', 'Percent_B'),
@@ -95,27 +94,25 @@ UMI_readable <- UMI %>%
   mutate(
     Percent_A = as.numeric(Percent_A) / 10 ,
     Percent_B = as.numeric(Percent_B) / 10 ,
-    Sample_readable_PL = paste(Percent_A, Percent_B, sep = ':')
-  ) %>% 
-  select(barcode, Sample_readable_PL) %>% 
-  right_join(UMI) %>% 
-  mutate( sample_readable = ifelse(is.na(Sample_readable_PL), sample, Sample_readable_PL))
+    Sample_readable = paste(Percent_A, Percent_B, sep = ':')
+  )
 
-UMI_readable_filtered <- UMI_readable %>% 
+UMI_plasmids_filtered <- UMI_plasmids %>% 
   filter(Variant_level_UMI > UMI_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
-UMI_Samples <- UMI_readable %>% 
+
+### Creating the NGS data 
+UMI_Samples <- UMI %>% 
   filter(grepl(sample_sets, sample))
 
-### getting a dataframge with AKs according fragments included in the sequencing run 
-UMI_Samples_groups <- UMI_Samples %>% group_by(sample_readable, fragment) %>% summarize()
+UMI_Samples_groups <- UMI_Samples %>% group_by(sample, fragment) %>% summarize()
 
 ### the groups are used to filter the NGS data before joining both dataframes
 ### exclude all samples that are not covered with the UMI run
 
 NGS_Samples <- NGS %>%
-  filter(sample %in% UMI_Samples_groups$sample_readable & fragment %in% UMI_Samples_groups$fragment)
+  filter(sample %in% UMI_Samples_groups$sample & fragment %in% UMI_Samples_groups$fragment)
 
 NGS_UMI_Samples <- NGS_Samples %>% 
   full_join(UMI_Samples,
@@ -158,8 +155,10 @@ NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_NGS != 'D')
 
-write.csv(UMI_readable, 'UMI_sequencing_mutserve.csv')
-write.csv(UMI_readable_filtered, 'UMI_sequencing_filtered_mutserve.csv')
+
+write.csv(UMI, 'UMI_sequencing_mutserve.csv')
+write.csv(UMI_plasmids, 'UMI_sequencing_plasmids_mutserve.csv')
+write.csv(UMI_plasmids_filtered, 'UMI_sequencing_filtered_plasmids_mutserve.csv')
 #write.csv(mutserve_combined, paste(run_path, 'mutserve_UMI_combined.csv', sep = ''))
 write.csv(NGS_UMI_Samples, paste(run_path, 'NGS_UMI_samples.csv', sep = ''))
 write.csv(NGS_UMI_Samples_filtered, paste(run_path, 'NGS_UMI_samples_filtered.csv', sep = ''))

@@ -48,7 +48,24 @@ mutserve_summary_files
 .view()
 .set{ run_summaries }
 
+include {SUMMARIZE_RUN} from '../processes/summarize_run.nf'
+include {MERGE_RESULT_FILES} from '../processes/merge_result_files.nf'
+include {SUMMARIZE_RESULTS} from '../processes/summarize_results.nf'
+
 workflow ANALYSE_RUN {
+
+    SUMMARIZE_RUN( run_summaries, summarize_UMI_run_mutserve_ngs_data )
+
+    if(params.merge_result_files){
+        SUMMARIZE_RUN.out.summarize_results
+        .map{ run, summaries -> run}
+        .collect()
+        .set{ result_files }
+
+        MERGE_RESULT_FILES( result_files, merge_result_files)
+    }
+
+    SUMMARIZE_RESULTS( SUMMARIZE_RUN.out.summaries.summaries, summarize_results )
 
 
 
