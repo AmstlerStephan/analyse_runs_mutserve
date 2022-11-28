@@ -18,6 +18,10 @@ merge_result_files = file("../bin/merge_result_files.R", checkIfExists: true)
 summarize_UMI_run_mutserve_ngs_data = file("../bin/summarize_UMI_run_mutserve_ngs_data.R", checkIfExists: true)
 summarize_results = file("../bin/summarize_results.R", checkIfExists: true)
 num_of_read_vs_bam_files = file("../bin/num_of_read_vs_bam_files.R", checkIfExists: true)
+summarize_results_Plasmid_quality_measures = file("../bin/summarize_results_Plasmid_quality_measures.R", checkIfExists: true)
+summarize_results_Plasmid_plots = file("../bin/summarize_results_Plasmid_plots.R", checkIfExists: true)
+summarize_results_NGS_quality_measures = file("../bin/summarize_results_NGS_quality_measures.R", checkIfExists: true)
+summarize_results_NGS_plots = file("../bin/summarize_results_NGS_plots.R", checkIfExists: true)s
 
 ngs_data = file("${params.ngs_data}", checkIfExists: true)
 expected_mutations = file("${params.expected_mutations}", checkIfExists: true)
