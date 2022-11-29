@@ -2,7 +2,7 @@ process SUMMARIZE_RUN {
     publishDir "${params.output}/umi_summary_files_per_run/${run}/", mode: 'copy'
   input:
     tuple val( run ), path( mutserve_summary ), path( nanostat_summary )
-    path corresponding_position
+    path corresponding_positions
     path ngs_data
     path summarize_UMI_run_mutserve_ngs_data_R
   output:
@@ -20,6 +20,6 @@ process SUMMARIZE_RUN {
     --ngs_data ${ngs_data} \
     --umi_cutoff_R9 ${params.umi_cutoff_R9} \
     --umi_cutoff_V14 ${params.umi_cutoff_V14} \
-    --corresponding_position ${corresponding_position}
+    --corresponding_positions ${corresponding_positions}
   """
 }
