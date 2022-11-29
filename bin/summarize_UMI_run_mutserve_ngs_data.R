@@ -38,7 +38,7 @@ parser <- add_argument(
 )
 parser <- add_argument(
   parser,
-  "--corresponding_mutations",
+  "--corresponding_positions",
   help = "corresponding mutations for the fragments"
 )
 
@@ -48,7 +48,7 @@ run <- argv$run
 nanostat_summary <- argv$nanostat_summary
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
-corresponding_mutations <- argv$corresponding_mutations
+corresponding_positions <- argv$corresponding_positions
 umi_cutoff <- ifelse(
   str_detect(run, "V14"),
   argv$umi_cutoff_V14,
