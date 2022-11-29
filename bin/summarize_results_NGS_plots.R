@@ -22,12 +22,18 @@ umi_comparison_variant_levels_ngs_per_position_dir <-
   dir.create("umi_comparison_variant_levels_ngs_per_position")
 umi_density_plot_variant_levels_dir <-
   dir.create("umi_density_plot_variant_levels")
+umi_bland_altman_dir <-
+  dir.create("umi_bland_altman")
+
 
 ### functions
 
 create_bland_altman <- function(data, path, Fragment, Sample, Run) {
   jpeg(
-    file = paste(Fragment, Sample, Run, "bland_altman.jpg", sep = "_"),
+    file = paste(
+      path,
+      paste(Fragment, Sample, Run, "bland_altman.jpg", sep = "_"),
+      sep = "/"),
     width = 10,
     height = 10,
     units = "in",
@@ -169,10 +175,7 @@ for (i in 1:number_of_groups) {
   # Bland Altman Plot NGS vs UMI variant levels
   create_bland_altman(
     data_filtered,
-    paste(path,
-      dir_Bland_Altman,
-      sep = "/"
-    ),
+    umi_bland_altman_dir,
     Fragment,
     Sample,
     Run
