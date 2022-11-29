@@ -1,5 +1,5 @@
 process  MERGE_RESULT_FILES {
-    publishDir "${params.output}/umi_all/", mode: 'copy'
+    publishDir "${params.output}/umi_summary_file_all_runs/", mode: 'copy'
   input:
     path umi_sequencing_mutserve
     path merge_result_files_R

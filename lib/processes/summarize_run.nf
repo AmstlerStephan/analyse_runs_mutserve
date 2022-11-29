@@ -1,5 +1,5 @@
 process SUMMARIZE_RUN {
-    publishDir "${params.output}/umi_summary_files/${run}/", mode: 'copy'
+    publishDir "${params.output}/umi_summary_files_per_run/${run}/", mode: 'copy'
   input:
     tuple val( run ), path( mutserve_summary ), path( nanostat_summary )
     val ngs_data
