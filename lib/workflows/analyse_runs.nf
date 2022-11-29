@@ -34,7 +34,7 @@ qm = "quality measures"
 
 // STAGE CHANNELS
 if (params.all_runs) {
-    Channel.fromPath("${params.run_folder}/run*/**/mutserve/*${params.mutserve_summary_pattern}", type: 'file', maxDepth: 2)
+    Channel.fromPath("${params.run_folder}/run*/**mutserve/*${params.mutserve_summary_pattern}", type: 'file', maxDepth: 2)
     .view()
     .set{ mutserve_summary_files}
     
