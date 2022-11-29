@@ -20,6 +20,6 @@ process SUMMARIZE_RUN {
     --ngs_data ${ngs_data} \
     --umi_cutoff_R9 ${params.umi_cutoff_R9} \
     --umi_cutoff_V14 ${params.umi_cutoff_V14} \
-    --corresponding_position ${params.corresponding_position}
+    --corresponding_position ${corresponding_position}
   """
 }
