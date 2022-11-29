@@ -14,27 +14,19 @@ parser <- add_argument(
 )
 
 argv <- parse_args(parser)
-UMI_Plasmid_Samples <- argv$UMI_Plasmid_Samples
+umi_plasmid_samples <- argv$umi_plasmid_samples
 mutation_classification <- argv$mutation_classification
 
 ### load data
 
 umi_data <-
-  read_tsv(UMI_Plasmid_Samples)
+  read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
   mutate(
     Position = as.numeric(as.character(Position)),
     Corresponding_Position = as.numeric(as.character(Corresponding_Position))
   )
-
-get_groups <- function(data) {
-  groups <- data %>%
-    group_by(sample, fragment, run) %>%
-    summarize() %>%
-    drop_na()
-  return(groups)
-}
 
 detected_mutations <- tibble(
   Sample = character(),
@@ -59,14 +51,11 @@ detected_mutations <- tibble(
   f1_score_control = numeric()
 )
 
-groups <- get_groups(umi_data)
+groups <- umi_data %>%
+  group_by(sample, fragment, run) %>%
+  summarize() %>%
+  drop_na()
 number_of_groups <- nrow(groups)
-path <- paste(result_folder,
-  dir_figures,
-  data_type,
-  dir_Plasmid,
-  sep = "/"
-)
 
 for (i in 1:number_of_groups) {
   Sample <- groups[[1]][i]
@@ -87,7 +76,7 @@ for (i in 1:number_of_groups) {
       Variant_UMI,
       pos,
       number_of_reads,
-      `COV.TOTAL`,
+      num_of_consensus_sequences,
       Q_score,
       Sample_readable
     ) %>%
@@ -128,7 +117,7 @@ for (i in 1:number_of_groups) {
 
   Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
 
-  num_of_consensus_sequences <- ceiling(mean(data_filtered$`COV.TOTAL`, na.rm = TRUE))
+  num_of_consensus_sequences <- ceiling(mean(data_filtered[`COV-TOTAL`], na.rm = TRUE))
 
   positive <- num_of_muts_Ref
 
@@ -195,7 +184,7 @@ for (i in 1:number_of_groups) {
     f1_score_control = f1_score_control
   )
 
-  write_tsv(data_filtered, paste(Sample, Fragment, Run, "detected_mutations.csv", sep = "_"))
+  write_tsv(data_filtered, paste(Sample, Fragment, Run, "detected_mutations.tsv", sep = "_"))
 }
 
 write_tsv(detected_mutations, "umi_plasmid_quality_parameters.tsv")

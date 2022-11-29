@@ -42,13 +42,6 @@ sample_sets <- c("AK|SAPHIR")
 SAPHIR_samples <- c("4612|4901|4451|4624|4864|5248|5538|5400")
 AK_samples <- c("AK03|AK07|AK14|AK17|AK33")
 
-
-# run_path <- "~/UMI_LPA_KIV2/run7/"
-# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run7/run7_0_0.tsv"
-# mutserve_summary <- "~/UMI_LPA_KIV2/run7/mutserve/run7_summary_mutserve.txt"
-# bed_file <- "~/UMI_LPA_KIV2/run7/ont_pl/barcode01/targets.bed"
-# ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR_mutation_classification.csv"
-
 mutserve_summary <-
   read_tsv(mutserve_summary, na = c("", "NA", "-"))
 
@@ -69,8 +62,8 @@ NGS <- read_csv(ngs_data) %>%
 mutserve_raw_full_conversions <- mutserve_summary %>%
   filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < UMI_cutoff)) %>%
   mutate(
-    Variant_level_UMI = 1,
-    Variant_UMI = `TOP-REV`
+    variant_level_UMI = 1,
+    variant_UMI = `TOP-REV`
   )
 
 ### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
@@ -78,8 +71,8 @@ mutserve_raw_full_conversions <- mutserve_summary %>%
 mutserve_raw_variants <- mutserve_summary %>%
   drop_na(`MINOR-REV`) %>%
   mutate(
-    Variant_level_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
-    Variant_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
+    variant_level_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
+    variant_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
   )
 
 mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
@@ -89,7 +82,12 @@ mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_varia
 ### Join Barcodes and mutserve data
 
 UMI <- mutserve_combined %>%
-  inner_join(barcodes, by = c("barcode"))
+  inner_join(barcodes, by = c("barcode")) %>%
+  dplyr::rename(
+    num_of_consensus_sequences = `COV-TOTAL`,
+    Q_score = mean_qual,
+    ref_UMI = REF
+  )
 
 UMI_plasmids <- UMI %>%
   filter(grepl("A_B", sample)) %>%
@@ -105,7 +103,7 @@ UMI_plasmids <- UMI %>%
   )
 
 UMI_plasmids_filtered <- UMI_plasmids %>%
-  filter(Variant_level_UMI > UMI_cutoff) %>%
+  filter(variant_level_UMI > UMI_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
 
@@ -129,14 +127,11 @@ NGS_UMI_Samples <- NGS_Samples %>%
   ) %>%
   dplyr::rename(
     position = pos,
-    ref_UMI = REF,
     variant_NGS = variant,
     variant_level_NGS = variant_level,
     ref_NGS = ref,
-    num_of_consensus_sequences = `COV-TOTAL`,
-    variant_UMI = Variant_UMI,
-    variant_level_UMI = Variant_level_UMI,
-    Q_score = mean_qual
+    variant_UMI = variant_UMI,
+    variant_level_UMI = variant_level_UMI,
   ) %>%
   select(
     sample,
@@ -158,7 +153,7 @@ NGS_UMI_Samples <- NGS_Samples %>%
     variant_level_UMI = coalesce(variant_level_UMI, 0),
     variant_level_NGS = coalesce(variant_level_NGS, 0),
     variance_level_absolute_difference = variant_level_NGS - variant_level_UMI,
-    # Variance_level_relative_difference = (Variant_level_NGS / Variant_level_UMI - 1)
+    # Variance_level_relative_difference = (Variant_level_NGS / variant_level_UMI - 1)
   )
 
 NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%

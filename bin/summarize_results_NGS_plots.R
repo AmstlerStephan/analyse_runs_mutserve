@@ -17,14 +17,18 @@ ngs_data <-
   read_tsv(ngs_umi_samples)
 
 umi_comparison_variant_levels_ngs_dir <-
-  dir.create("umi_comparison_variant_levels_ngs")
+  "umi_comparison_variant_levels_ngs"
 umi_comparison_variant_levels_ngs_per_position_dir <-
-  dir.create("umi_comparison_variant_levels_ngs_per_position")
+  "umi_comparison_variant_levels_ngs_per_position"
 umi_density_plot_variant_levels_dir <-
-  dir.create("umi_density_plot_variant_levels")
+  "umi_density_plot_variant_levels"
 umi_bland_altman_dir <-
-  dir.create("umi_bland_altman")
+  "umi_bland_altman"
 
+dir.create(umi_comparison_variant_levels_ngs_dir)
+dir.create(umi_comparison_variant_levels_ngs_per_position_dir)
+dir.create(umi_density_plot_variant_levels_dir)
+dir.create(umi_bland_altman_dir)
 
 ### functions
 
@@ -33,7 +37,8 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
     file = paste(
       path,
       paste(Fragment, Sample, Run, "bland_altman.jpg", sep = "_"),
-      sep = "/"),
+      sep = "/"
+    ),
     width = 10,
     height = 10,
     units = "in",
@@ -185,7 +190,8 @@ for (i in 1:number_of_groups) {
     filename = paste(
       umi_comparison_variant_levels_ngs_dir,
       paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"),
+      sep = "/"
+    ),
     device = "jpg",
     comparison_variant_levels_ngs_umi
   )
@@ -194,7 +200,8 @@ for (i in 1:number_of_groups) {
     filename = paste(
       umi_comparison_variant_levels_ngs_per_position_dir,
       paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"),
+      sep = "/"
+    ),
     device = "jpg",
     comparison_variant_levels_ngs_umi_per_position
   )
@@ -203,7 +210,8 @@ for (i in 1:number_of_groups) {
     filename = paste(
       umi_density_plot_variant_levels_dir,
       paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"),
+      sep = "/"
+    ),
     device = "jpg",
     density_plot_variant_levels
   )

@@ -34,24 +34,20 @@ plasmid_expected_mutations <-
 
 ### create output dirs
 umi_density_plot_variant_levels_dir <-
-  dir.create("umi_density_plot_variant_levels")
+  "umi_density_plot_variant_levels"
 umi_plot_variance_level_per_sample_dir <-
-  dir.create("umi_plot_variance_level_per_sample")
+  "umi_plot_variance_level_per_sample"
 umi_plot_variance_level_per_sample_zoomed_dir <-
-  dir.create("umi_plot_variance_level_per_sample_zoomed")
+  "umi_plot_variance_level_per_sample_zoomed"
 
+dir.create(umi_density_plot_variant_levels_dir)
+dir.create(umi_plot_variance_level_per_sample_dir)
+dir.create(umi_plot_variance_level_per_sample_zoomed_dir)
 
-### functions
-
-get_groups <- function(data) {
-  groups <- data %>%
-    group_by(sample, fragment, run) %>%
-    summarize() %>%
-    drop_na()
-  return(groups)
-}
-
-groups <- get_groups(umi_data)
+groups <- umi_data %>%
+  group_by(sample, fragment, run) %>%
+  summarize() %>%
+  drop_na()
 number_of_groups <- nrow(groups)
 
 
@@ -74,7 +70,7 @@ for (i in 1:number_of_groups) {
       variant_UMI,
       pos,
       number_of_reads,
-      `COV.TOTAL`,
+      num_of_consensus_sequences,
       Q_score,
       Sample_readable
     ) %>%
