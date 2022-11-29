@@ -88,7 +88,7 @@ mutserve_raw_variants <- mutserve_summary %>%
   drop_na(`MINOR-REV`) %>%
   mutate(
     variant_level_umi = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
-    variant_umi = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
+    variant_umi = as.character(ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`))
   )
 
 mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
