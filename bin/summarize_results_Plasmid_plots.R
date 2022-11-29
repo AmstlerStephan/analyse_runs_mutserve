@@ -28,8 +28,8 @@ umi_data <-
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
   mutate(
-    Position = as.numeric(as.character(Position)),
-    Corresponding_Position = as.numeric(as.character(Corresponding_Position))
+    position = as.numeric(as.character(Position)),
+    corresponding_position = as.numeric(as.character(Corresponding_Position))
   )
 
 ### define parameters

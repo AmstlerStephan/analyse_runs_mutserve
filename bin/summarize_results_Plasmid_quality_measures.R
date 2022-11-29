@@ -22,11 +22,7 @@ mutation_classification <- argv$mutation_classification
 umi_data <-
   read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
-  read.csv(mutation_classification) %>%
-  mutate(
-    Position = as.numeric(as.character(Position)),
-    Corresponding_Position = as.numeric(as.character(Corresponding_Position))
-  )
+  read.csv(mutation_classification)
 
 ### define parameters
 STR_start <- 2472
@@ -60,7 +56,7 @@ groups <- umi_data %>%
   summarize() %>%
   drop_na()
 number_of_groups <- nrow(groups)
-
+print(number_of_groups)
 for (i in 1:number_of_groups) {
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
