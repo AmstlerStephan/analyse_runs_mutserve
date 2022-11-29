@@ -58,6 +58,7 @@ mutserve_summary_files
     tuple( run, mutserve_summary_path )
 }
 .join(nanostat_summaries)
+.view()
 .set{ run_summaries }
 
 
