@@ -26,11 +26,7 @@ mutation_classification <- argv$mutation_classification
 umi_data <-
   read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
-  read.csv(mutation_classification) %>%
-  mutate(
-    position = as.numeric(as.character(Position)),
-    corresponding_position = as.numeric(as.character(Corresponding_Position))
-  )
+  read.csv(mutation_classification)
 
 ### define parameters
 STR_start <- 2472
@@ -79,7 +75,7 @@ for (i in 1:number_of_groups) {
       Q_score,
       Sample_readable
     ) %>%
-    full_join(plasmid_filtered, by = c("pos" = "position")) %>%
+    full_join(plasmid_filtered, by = c("pos" = "Position")) %>%
     filter(pos < STR_start | pos > STR_end)
 
   write_tsv(data_filtered, "debugging_joined_table.tsv")

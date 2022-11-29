@@ -45,6 +45,15 @@ if (params.all_runs) {
     nanostat_summary_files = Channel.fromPath("${params.nanostat_folder}/*${params.nanostat_tsv_pattern}", type: 'file')
     mutserve_summary_files = Channel.fromPath("${params.run_folder}/**${params.mutserve_summary_pattern}", type: 'file')
 }
+mutserve_summary_files
+.map{
+    mutserve_summary_path ->
+    run = (mutserve_summary_path =~ /run\d*_*V*\d*/)[0]
+    tuple( run, mutserve_summary_path )
+}
+.groupTuple(by: 1)
+.view()
+.set{ mutserve_summaries }
 
 nanostat_summary_files
 .map{ 
@@ -52,18 +61,10 @@ nanostat_summary_files
     run = (nanostat_summary_path =~ /run\d*_*V*\d*/)[0]
     tuple( run, nanostat_summary_path )
 }
-.view()
-.set{ nanostat_summaries }
-
-mutserve_summary_files
-.map{
-    mutserve_summary_path ->
-    run = (mutserve_summary_path =~ /run\d*_*V*\d*/)[0]
-    tuple( run, mutserve_summary_path )
-}
-.join(nanostat_summaries)
+.join( mutserve_summaries )
 .view()
 .set{ run_summaries }
+
 
 
 include {SUMMARIZE_RUN} from '../processes/summarize_run.nf'
