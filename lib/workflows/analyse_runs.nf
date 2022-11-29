@@ -85,7 +85,7 @@ workflow ANALYSE_RUN {
         .set{ result_files }
 
         MERGE_RESULT_FILES( result_files, merge_result_files)
-
+        
     }
 
     SUMMARIZE_NGS_UMI_PLOTS( SUMMARIZE_RUN.out.ngs_raw, summarize_results_NGS_plots, plots, raw )
