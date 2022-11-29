@@ -49,11 +49,11 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_R9
 )
 
-run <- "run11_V14"
-nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
-mutserve_summary <- "~/UMI_LPA_KIV2/run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
-ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-umi_cutoff <- 0.003
+# run <- "run11_V14"
+# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
+# mutserve_summary <- "~/UMI_LPA_KIV2/run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
+# ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+# umi_cutoff <- 0.003
 
 ### define parameters
 STR_start <- 2472
