@@ -26,9 +26,12 @@ reads_vs_cons_consensus_sequences_plot <- function(split_by) {
 ### Analyze data
 
 reads_vs_final_bam_files <- umi_data %>%
-  mutate(mean_cov = mean(COV.TOTAL)) %>%
-  group_by(mean_cov, number_of_reads, sample, fragment, run, is_V14) %>%
-  summarize()
+  group_by(sample, fragment, run, is_V14) %>%
+  summarize(mean_cov = mean(coverage),
+            number_of_reads = number_of_reads,
+            min_read_length = min_read_length,
+            min_qscore = min_qscore) %>%
+  unique()
 
 ### Number of reads versus number of final consensus sequences
 ### split by Run or sequencing device

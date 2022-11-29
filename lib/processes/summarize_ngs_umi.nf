@@ -1,5 +1,5 @@
 process SUMMARIZE_NGS_UMI {
-    publishDir "${params.output}/NGS/${data_type}/${output_type}", mode: 'symlink'
+    publishDir "${params.output}/NGS/${data_type}/${output_type}/${run}", mode: 'copy'
   input:
     tuple val( run ), path( ngs_data )
     path summarize_results_R

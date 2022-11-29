@@ -28,9 +28,13 @@ umi_data <-
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
   mutate(
-    Position = as.numeric(as.character(Position)),
-    Corresponding_Position = as.numeric(as.character(Corresponding_Position))
+    position = as.numeric(as.character(Position)),
+    corresponding_position = as.numeric(as.character(Corresponding_Position))
   )
+
+### define parameters
+STR_start <- 2472
+STR_end <- 2505
 
 ### create output dirs
 umi_density_plot_variant_levels_dir <-
@@ -48,6 +52,7 @@ groups <- umi_data %>%
   group_by(sample, fragment, run) %>%
   summarize() %>%
   drop_na()
+
 number_of_groups <- nrow(groups)
 
 
@@ -66,16 +71,18 @@ for (i in 1:number_of_groups) {
       Percent_A,
       Percent_B,
       run,
-      variant_level_UMI,
-      variant_UMI,
+      variant_level_umi,
+      variant_umi,
       pos,
       number_of_reads,
-      num_of_consensus_sequences,
+      coverage,
       Q_score,
       Sample_readable
     ) %>%
-    full_join(plasmid_filtered, by = c("pos" = "Position")) %>%
+    full_join(plasmid_filtered, by = c("pos" = "position")) %>%
     filter(pos < STR_start | pos > STR_end)
+
+  write_tsv(data_filtered, "debugging_joined_table.tsv")
 
   if (100 %in% data_filtered$Percent_A) {
     data_filtered <- data_filtered %>%
@@ -88,18 +95,19 @@ for (i in 1:number_of_groups) {
 
   data_filtered <- data_filtered %>%
     mutate(mutation_type = ifelse(
-      as.character(variant_UMI) == TypeA,
+      as.character(variant_umi) == TypeA,
       as.character(type_annot),
-      ifelse(as.character(variant_UMI) == TypeB,
+      ifelse(as.character(variant_umi) == TypeB,
         "type_b", "undefined"
       )
     )) %>%
-    mutate(variant_level_UMI = coalesce(variant_level_UMI, 0.4))
+    mutate(variant_level_umi = coalesce(variant_level_umi, 0.4))
+
 
   plot_variance_level_per_sample <-
     ggplot(
       data_filtered,
-      aes(x = pos, y = variant_level_UMI, color = mutation_type)
+      aes(x = pos, y = variant_level_umi, color = mutation_type)
     ) +
     geom_point() +
     labs(
@@ -118,7 +126,7 @@ for (i in 1:number_of_groups) {
   plot_variance_level_per_sample_zoomed <-
     ggplot(
       data_filtered,
-      aes(x = pos, y = variant_level_UMI, color = mutation_type)
+      aes(x = pos, y = variant_level_umi, color = mutation_type)
     ) +
     geom_point() +
     labs(
@@ -143,7 +151,7 @@ for (i in 1:number_of_groups) {
     data_filtered %>%
     ggplot() +
     geom_density(
-      aes(variant_level_UMI),
+      aes(variant_level_umi),
       fill = "green",
       color = "grey",
       alpha = 0.4
@@ -178,31 +186,31 @@ for (i in 1:number_of_groups) {
     scale_x_continuous(breaks = seq(0, 1, by = 0.1))
 
   ggsave(
-    filename = paste(
-      umi_density_plot_variant_levels_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_density_plot_variant_levels_dir,
     device = "jpg",
     density_plot_variant_levels
   )
 
   ggsave(
-    filename = paste(
-      umi_plot_variance_level_per_sample_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_plot_variance_level_per_sample_dir,
     device = "jpg",
     plot_variance_level_per_sample
   )
 
   ggsave(
-    filename = paste(
-      umi_plot_variance_level_per_sample_zoomed_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_plot_variance_level_per_sample_zoomed_dir,
     device = "jpg",
     plot_variance_level_per_sample_zoomed
   )

@@ -47,14 +47,14 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
 
   bland_stats <-
     bland.altman.stats(
-      data$variant_level_NGS,
-      data$variant_level_UMI
+      data$variant_level_ngs,
+      data$variant_level_umi
     )
 
   print(
     bland.altman.plot(
-      data$variant_level_NGS,
-      data$variant_level_UMI,
+      data$variant_level_ngs,
+      data$variant_level_umi,
       main = paste(Sample, Fragment, "Variant levels", sep = "_"),
       xlab = "Means",
       ylab = "Differences",
@@ -96,11 +96,11 @@ for (i in 1:number_of_groups) {
     filter(sample == Sample, fragment == Fragment)
 
   r_squared <-
-    data_filtered %>% lm(variant_level_UMI ~ variant_level_NGS, data = .)
+    data_filtered %>% lm(variant_level_umi ~ variant_level_ngs, data = .)
   r_squared <- summary(r_squared)$r.squared
 
   comparison_variant_levels_ngs_umi <- data_filtered %>%
-    ggplot(aes(x = variant_level_UMI, y = variant_level_NGS)) +
+    ggplot(aes(x = variant_level_umi, y = variant_level_ngs)) +
     geom_abline() +
     geom_smooth(method = "lm", show.legend = TRUE) +
     geom_point(position = "jitter") +
@@ -128,9 +128,9 @@ for (i in 1:number_of_groups) {
 
   comparison_variant_levels_ngs_umi_per_position <-
     data_filtered %>%
-    ggplot(aes(x = Position)) +
-    geom_point(aes(y = variant_level_NGS, color = "NGS")) +
-    geom_point(aes(y = variant_level_UMI, color = "UMI")) +
+    ggplot(aes(x = position)) +
+    geom_point(aes(y = variant_level_ngs, color = "NGS")) +
+    geom_point(aes(y = variant_level_umi, color = "UMI")) +
     labs(
       x = "position relative to reference sequence",
       y = "relative variant Level",
@@ -147,13 +147,13 @@ for (i in 1:number_of_groups) {
     data_filtered %>%
     ggplot() +
     geom_density(
-      aes(variant_level_UMI),
+      aes(variant_level_umi),
       fill = "green",
       color = "grey",
       alpha = 0.4
     ) +
     geom_density(
-      aes(variant_level_NGS),
+      aes(variant_level_ngs),
       fill = "blue",
       color = "grey",
       alpha = 0.4
@@ -187,31 +187,31 @@ for (i in 1:number_of_groups) {
   )
 
   ggsave(
-    filename = paste(
-      umi_comparison_variant_levels_ngs_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_comparison_variant_levels_ngs_dir,
     device = "jpg",
     comparison_variant_levels_ngs_umi
   )
 
   ggsave(
-    filename = paste(
-      umi_comparison_variant_levels_ngs_per_position_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_comparison_variant_levels_ngs_per_position_dir,
     device = "jpg",
     comparison_variant_levels_ngs_umi_per_position
   )
 
   ggsave(
-    filename = paste(
-      umi_density_plot_variant_levels_dir,
-      paste(Fragment, Sample, Run, sep = "_"),
-      sep = "/"
-    ),
+    filename =
+      paste0(
+        paste(Fragment, Sample, Run, sep = "_"),
+        ".jpeg"),
+    path = umi_density_plot_variant_levels_dir,
     device = "jpg",
     density_plot_variant_levels
   )

@@ -36,7 +36,7 @@ detected_mutations <- tibble(
   num_of_deletions_NGS = numeric(),
   num_of_observations = numeric(),
   num_of_reads = numeric(),
-  num_of_consensus_sequences = numeric(),
+  coverage = numeric(),
   Q_score = numeric(),
   positve = numeric(),
   negative = numeric(),
@@ -66,32 +66,32 @@ for (i in 1:number_of_groups) {
 
   Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
 
-  num_of_consensus_sequences <- ceiling(mean(data_filtered$num_of_consensus_sequences, na.rm = TRUE))
+  coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
 
-  # View(data_filtered %>% filter(as.character(variant_UMI) != as.character(variant_NGS)))
+  # View(data_filtered %>% filter(as.character(variant_umi) != as.character(variant_ngs)))
 
   positive <- data_filtered %>%
-    filter(!is.na(variant_NGS)) %>%
+    filter(!is.na(variant_ngs)) %>%
     nrow()
 
-  # OR all Positions - positions with SNP
+  # OR all positions - positions with SNP
   negative <- as.numeric(Fragment) - positive
 
   # Number of positions that are recognized of having the same SNP
   true_positive <- data_filtered %>%
-    filter(!is.na(variant_NGS)) %>%
-    filter(as.character(variant_UMI) == as.character(variant_NGS)) %>%
+    filter(!is.na(variant_ngs)) %>%
+    filter(as.character(variant_umi) == as.character(variant_ngs)) %>%
     nrow()
 
   # Number of positions where a SNP was found in the UMI data, but not or a different in the NGS data
   false_positive <- data_filtered %>%
-    filter(is.na(variant_NGS) |
-      as.character(variant_UMI) != as.character(variant_NGS)) %>%
+    filter(is.na(variant_ngs) |
+      as.character(variant_umi) != as.character(variant_ngs)) %>%
     nrow()
 
   # Number of positions where a SNP was found in the NGS data, but not in the UMI data
   false_negative <- data_filtered %>%
-    filter(is.na(variant_UMI)) %>%
+    filter(is.na(variant_umi)) %>%
     nrow()
 
   # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
@@ -112,9 +112,9 @@ for (i in 1:number_of_groups) {
     Sample = Sample,
     Fragment = Fragment,
     Run = Run,
-    num_of_muts_UMI = length(which(data_filtered$variant_level_UMI > 0)),
-    num_of_muts_NGS = length(which(data_filtered$variant_level_NGS > 0)),
-    num_of_deletions_NGS = length(which(data_filtered$variant_NGS == "D")),
+    num_of_muts_UMI = length(which(data_filtered$variant_level_umi > 0)),
+    num_of_muts_NGS = length(which(data_filtered$variant_level_ngs > 0)),
+    num_of_deletions_NGS = length(which(data_filtered$variant_ngs == "D")),
     num_of_observations = num_of_observations,
     positve = positive,
     negative = negative,
@@ -128,7 +128,7 @@ for (i in 1:number_of_groups) {
     f1_score = f1_score,
     f1_score_control = f1_score_control,
     num_of_reads = num_of_reads,
-    num_of_consensus_sequences = num_of_consensus_sequences,
+    coverage = coverage,
     Q_score = Q_score
   )
 }

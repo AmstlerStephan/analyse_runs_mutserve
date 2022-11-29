@@ -24,9 +24,13 @@ umi_data <-
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
   mutate(
-    Position = as.numeric(as.character(Position)),
-    Corresponding_Position = as.numeric(as.character(Corresponding_Position))
+    position = as.numeric(as.character(Position)),
+    corresponding_position = as.numeric(as.character(Corresponding_Position))
   )
+
+### define parameters
+STR_start <- 2472
+STR_end <- 2505
 
 detected_mutations <- tibble(
   Sample = character(),
@@ -35,7 +39,7 @@ detected_mutations <- tibble(
   num_of_muts_UMI = numeric(),
   num_of_muts_Ref = numeric(),
   num_of_reads = numeric(),
-  num_of_consensus_sequences = numeric(),
+  coverage = numeric(),
   Q_score = numeric(),
   num_of_observations = numeric(),
   positve = numeric(),
@@ -72,15 +76,15 @@ for (i in 1:number_of_groups) {
       Percent_A,
       Percent_B,
       run,
-      Variant_level_UMI,
-      Variant_UMI,
+      variant_level_umi,
+      variant_umi,
       pos,
       number_of_reads,
-      num_of_consensus_sequences,
+      coverage,
       Q_score,
       Sample_readable
     ) %>%
-    full_join(plasmid_filtered, by = c("pos" = "Position")) %>%
+    full_join(plasmid_filtered, by = c("pos" = "position")) %>%
     filter(pos < STR_start | pos > STR_end)
 
   if (100 %in% data_filtered$Percent_A) {
@@ -94,16 +98,16 @@ for (i in 1:number_of_groups) {
 
   data_filtered <- data_filtered %>%
     mutate(mutation_type = ifelse(
-      as.character(Variant_UMI) == TypeA,
+      as.character(variant_umi) == TypeA,
       as.character(type_annot),
-      ifelse(as.character(Variant_UMI) == TypeB,
+      ifelse(as.character(variant_umi) == TypeB,
         "type_b", "undefined"
       )
     )) %>%
-    mutate(Variant_level_UMI = coalesce(Variant_level_UMI, 0.4))
+    mutate(variant_level_umi = coalesce(variant_level_umi, 0.4))
 
   num_of_muts_UMI <- data_filtered %>%
-    filter(!is.na(Variant_UMI)) %>%
+    filter(!is.na(variant_umi)) %>%
     nrow()
 
   num_of_muts_Ref <- data_filtered %>%
@@ -117,11 +121,11 @@ for (i in 1:number_of_groups) {
 
   Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
 
-  num_of_consensus_sequences <- ceiling(mean(data_filtered[`COV-TOTAL`], na.rm = TRUE))
+  coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
 
   positive <- num_of_muts_Ref
 
-  # OR all Positions - positions with SNP
+  # OR all positions - positions with SNP
   negative <- as.numeric(Fragment) - positive
 
   # Number of positions that are recognized of having the same SNP
@@ -138,7 +142,7 @@ for (i in 1:number_of_groups) {
 
   # Number of positions where a SNP was found in the NGS data, but not in the UMI data
   false_negative <- data_filtered %>%
-    filter(is.na(Variant_UMI)) %>%
+    filter(is.na(variant_umi)) %>%
     nrow()
 
   # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
@@ -156,7 +160,7 @@ for (i in 1:number_of_groups) {
     true_positive / (true_positive + 0.5 * (false_positive + false_negative))
 
   num_of_detected_mutations <- data_filtered %>%
-    select(Variant_level_UMI)
+    select(variant_level_umi)
   num_of_detected_mutations <-
     colSums(num_of_detected_mutations > 0)
 
@@ -166,10 +170,10 @@ for (i in 1:number_of_groups) {
     Run = Run,
     num_of_muts_UMI = num_of_muts_UMI,
     num_of_muts_Ref = num_of_muts_Ref,
-    # num_of_deletions_Ref = length(which(data_filtered$Variant_NGS == "D")), DISCUSS WITH STEFAN!
+    # num_of_deletions_Ref = length(which(data_filtered$variant_ngs == "D")), DISCUSS WITH STEFAN!
     num_of_observations = num_of_observations,
     num_of_reads = num_of_reads,
-    num_of_consensus_sequences = num_of_consensus_sequences,
+    coverage = coverage,
     Q_score = Q_score,
     positve = positive,
     negative = negative,

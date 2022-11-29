@@ -22,8 +22,8 @@ dir_filtered <- "filtered"
 dir_raw <- "raw"
 dir_reads_vs_cons_consensus_sequences <- "reads_vs_cons_consensus_sequences"
 dir_Bland_Altman <- "bland_Altman"
-dir_compare_NGS_vs_UMI_per_position <- "compare_variant_level_NGS_vs_UMI_per_position"
-dir_compare_NGS_vs_UMI <- "compare_variant_level_NGS_vs_UMI"
+dir_compare_NGS_vs_UMI_per_position <- "compare_variant_level_ngs_vs_UMI_per_position"
+dir_compare_NGS_vs_UMI <- "compare_variant_level_ngs_vs_UMI"
 dir_density_NGS_vs_UMI <- "density_mutation_levels_NGS_vs_UMI"
 dir_density <- "density_mutation_levels"
 dir_variance_per_pos <- "variance_per_pos"
@@ -72,8 +72,8 @@ run_info <- read.csv('info/Status_overview.csv', header = TRUE) %>%
 plasmid_expected_mutations <-
   read.csv("data_ngs/plasmid_expected_muts.csv") %>%
   mutate(
-    Position = as.numeric(as.character(Position)),
-    Corresponding_Position = as.numeric(as.character(Corresponding_Position))
+    position = as.numeric(as.character(position)),
+    Corresponding_position = as.numeric(as.character(Corresponding_position))
   )
 
 ### functions
@@ -131,13 +131,13 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
   
   
   bland_stats <-
-    bland.altman.stats(data$Variant_level_NGS,
-                       data$Variant_level_UMI)
+    bland.altman.stats(data$variant_level_ngs,
+                       data$variant_level_umi)
   
   print(
     bland.altman.plot(
-      data$Variant_level_NGS,
-      data$Variant_level_UMI,
+      data$variant_level_ngs,
+      data$variant_level_umi,
       main = paste(Sample, Fragment, "Variant levels", sep = "_"),
       xlab = "Means",
       ylab = "Differences",
@@ -180,7 +180,7 @@ analyze_NGS_data <- function(data, data_type) {
     num_of_deletions_NGS = numeric(),
     num_of_observations = numeric(),
     num_of_reads = numeric(),
-    num_of_consensus_sequences = numeric(),
+    coverage = numeric(),
     Q_score = numeric(),
     positve = numeric(),
     negative = numeric(),
@@ -214,32 +214,32 @@ analyze_NGS_data <- function(data, data_type) {
     
     Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
     
-    num_of_consensus_sequences <- ceiling(mean(data_filtered$num_of_consensus_sequences, na.rm = TRUE))
+    coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
     
-    #View(data_filtered %>% filter(as.character(Variant_UMI) != as.character(Variant_NGS)))
+    #View(data_filtered %>% filter(as.character(variant_umi) != as.character(variant_ngs)))
     
     positive <- data_filtered %>%
-      filter(!is.na(Variant_NGS)) %>%
+      filter(!is.na(variant_ngs)) %>%
       nrow()
     
-    # OR all Positions - positions with SNP
+    # OR all positions - positions with SNP
     negative <- as.numeric(Fragment) - positive
     
     # Number of positions that are recognized of having the same SNP
     true_positive <- data_filtered %>%
-      filter(!is.na(Variant_NGS)) %>%
-      filter(as.character(Variant_UMI) == as.character(Variant_NGS)) %>%
+      filter(!is.na(variant_ngs)) %>%
+      filter(as.character(variant_umi) == as.character(variant_ngs)) %>%
       nrow()
     
     # Number of positions where a SNP was found in the UMI data, but not or a different in the NGS data
     false_positive <- data_filtered %>%
-      filter(is.na(Variant_NGS) |
-               as.character(Variant_UMI) != as.character(Variant_NGS)) %>%
+      filter(is.na(variant_ngs) |
+               as.character(variant_umi) != as.character(variant_ngs)) %>%
       nrow()
     
     # Number of positions where a SNP was found in the NGS data, but not in the UMI data
     false_negative <- data_filtered %>%
-      filter(is.na(Variant_UMI)) %>%
+      filter(is.na(variant_umi)) %>%
       nrow()
     
     # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
@@ -260,9 +260,9 @@ analyze_NGS_data <- function(data, data_type) {
       Sample = Sample,
       Fragment = Fragment,
       Run = Run,
-      num_of_muts_UMI = length(which(data_filtered$Variant_level_UMI > 0)),
-      num_of_muts_NGS = length(which(data_filtered$Variant_level_NGS > 0)),
-      num_of_deletions_NGS = length(which(data_filtered$Variant_NGS == "D")),
+      num_of_muts_UMI = length(which(data_filtered$variant_level_umi > 0)),
+      num_of_muts_NGS = length(which(data_filtered$variant_level_ngs > 0)),
+      num_of_deletions_NGS = length(which(data_filtered$variant_ngs == "D")),
       num_of_observations = num_of_observations,
       positve = positive,
       negative = negative,
@@ -276,18 +276,18 @@ analyze_NGS_data <- function(data, data_type) {
       f1_score = f1_score,
       f1_score_control = f1_score_control, 
       num_of_reads = num_of_reads,
-      num_of_consensus_sequences = num_of_consensus_sequences, 
+      coverage = coverage, 
       Q_score = Q_score
     )
     
     # NGS variant level vs UMI variant level
     
     r_squared <-
-      data_filtered %>% lm(Variant_level_UMI ~ Variant_level_NGS, data = .)
+      data_filtered %>% lm(variant_level_umi ~ variant_level_ngs, data = .)
     r_squared <- summary(r_squared)$r.squared
     
     comparison_variant_levels_ngs_umi <- data_filtered %>%
-      ggplot(aes(x = Variant_level_UMI, y = Variant_level_NGS)) +
+      ggplot(aes(x = variant_level_umi, y = variant_level_ngs)) +
       geom_abline() +
       geom_smooth(method = 'lm', show.legend = TRUE) +
       geom_point(position = 'jitter') +
@@ -315,9 +315,9 @@ analyze_NGS_data <- function(data, data_type) {
     
     comparison_variant_levels_ngs_umi_per_position <-
       data_filtered %>%
-      ggplot(aes(x = Position)) +
-      geom_point(aes(y = Variant_level_NGS, color = 'NGS')) +
-      geom_point(aes(y = Variant_level_UMI, color = 'UMI')) +
+      ggplot(aes(x = position)) +
+      geom_point(aes(y = variant_level_ngs, color = 'NGS')) +
+      geom_point(aes(y = variant_level_umi, color = 'UMI')) +
       labs(
         x = 'position relative to reference sequence',
         y = 'relative variant Level',
@@ -334,13 +334,13 @@ analyze_NGS_data <- function(data, data_type) {
       data_filtered %>% 
       ggplot() +
       geom_density(
-        aes(Variant_level_UMI),
+        aes(variant_level_umi),
         fill = "green",
         color = "grey",
         alpha = 0.4
       ) +
       geom_density(
-        aes(Variant_level_NGS),
+        aes(variant_level_ngs),
         fill = "blue",
         color = "grey",
         alpha = 0.4
@@ -428,7 +428,7 @@ analyze_Plasmid_data <- function(data, data_type) {
     num_of_muts_UMI = numeric(),
     num_of_muts_Ref = numeric(),
     num_of_reads = numeric(),
-    num_of_consensus_sequences = numeric(),
+    coverage = numeric(),
     Q_score = numeric(),
     num_of_observations = numeric(),
     positve = numeric(),
@@ -470,14 +470,14 @@ analyze_Plasmid_data <- function(data, data_type) {
              Percent_A,
              Percent_B,
              run,
-             Variant_level_UMI,
-             Variant_UMI,
+             variant_level_umi,
+             variant_umi,
              pos, 
              number_of_reads,
-             `COV.TOTAL`,
+             coverage,
              Q_score, 
              Sample_readable) %>%
-      full_join(plasmid_filtered, by = c('pos' = 'Position')) %>%
+      full_join(plasmid_filtered, by = c('pos' = 'position')) %>%
       filter(pos < STR_start | pos > STR_end)
     
     if(100 %in% data_filtered$Percent_A){
@@ -491,15 +491,15 @@ analyze_Plasmid_data <- function(data, data_type) {
     
     data_filtered <- data_filtered %>%
       mutate(mutation_type = ifelse(
-        as.character(Variant_UMI) == TypeA,
+        as.character(variant_umi) == TypeA,
         as.character(type_annot) ,
-        ifelse(as.character(Variant_UMI) == TypeB,
+        ifelse(as.character(variant_umi) == TypeB,
                "type_b", "undefined")
       )) %>% 
-      mutate(Variant_level_UMI = coalesce(Variant_level_UMI, 0.4))
+      mutate(variant_level_umi = coalesce(variant_level_umi, 0.4))
     
     num_of_muts_UMI <- data_filtered %>%
-      filter(!is.na(Variant_UMI)) %>%
+      filter(!is.na(variant_umi)) %>%
       nrow()
     
     num_of_muts_Ref <- data_filtered %>%
@@ -513,11 +513,11 @@ analyze_Plasmid_data <- function(data, data_type) {
     
     Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
     
-    num_of_consensus_sequences <- ceiling(mean(data_filtered$`COV.TOTAL`, na.rm = TRUE))
+    coverage <- ceiling(mean(data_filtered$`coverage`, na.rm = TRUE))
     
     positive <- num_of_muts_Ref
     
-    # OR all Positions - positions with SNP
+    # OR all positions - positions with SNP
     negative <- as.numeric(Fragment) - positive
     
     # Number of positions that are recognized of having the same SNP
@@ -534,7 +534,7 @@ analyze_Plasmid_data <- function(data, data_type) {
     
     # Number of positions where a SNP was found in the NGS data, but not in the UMI data
     false_negative <- data_filtered %>%
-      filter(is.na(Variant_UMI)) %>%
+      filter(is.na(variant_umi)) %>%
       nrow()
     
     # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
@@ -552,7 +552,7 @@ analyze_Plasmid_data <- function(data, data_type) {
       true_positive / (true_positive + 0.5 * (false_positive + false_negative))
     
     num_of_detected_mutations <- data_filtered %>%
-      select(Variant_level_UMI)
+      select(variant_level_umi)
     num_of_detected_mutations <-
       colSums(num_of_detected_mutations > 0)
     
@@ -562,10 +562,10 @@ analyze_Plasmid_data <- function(data, data_type) {
       Run = Run,
       num_of_muts_UMI = num_of_muts_UMI,
       num_of_muts_Ref = num_of_muts_Ref,
-      # num_of_deletions_Ref = length(which(data_filtered$Variant_NGS == "D")), DISCUSS WITH STEFAN!
+      # num_of_deletions_Ref = length(which(data_filtered$variant_ngs == "D")), DISCUSS WITH STEFAN!
       num_of_observations = num_of_observations,
       num_of_reads = num_of_reads,
-      num_of_consensus_sequences = num_of_consensus_sequences, 
+      coverage = coverage, 
       Q_score = Q_score,
       positve = positive,
       negative = negative,
@@ -582,7 +582,7 @@ analyze_Plasmid_data <- function(data, data_type) {
     
     plot_variance_level_per_sample <-
       ggplot(data_filtered,
-             aes(x = pos, y = Variant_level_UMI, color = mutation_type)) +
+             aes(x = pos, y = variant_level_umi, color = mutation_type)) +
       geom_point() +
       labs(
         x = 'Position compared to reference genome',
@@ -599,7 +599,7 @@ analyze_Plasmid_data <- function(data, data_type) {
     
     plot_variance_level_per_sample_zoomed <-
       ggplot(data_filtered,
-             aes(x = pos, y = Variant_level_UMI, color = mutation_type)) +
+             aes(x = pos, y = variant_level_umi, color = mutation_type)) +
       geom_point() +
       labs(
         x = 'Position compared to reference genome',
@@ -627,7 +627,7 @@ analyze_Plasmid_data <- function(data, data_type) {
       data_filtered %>% 
       ggplot() +
       geom_density(
-        aes(Variant_level_UMI),
+        aes(variant_level_umi),
         fill = "green",
         color = "grey",
         alpha = 0.4
@@ -720,7 +720,7 @@ analyze_Plasmid_data <- function(data, data_type) {
 reads_vs_final_bam_files <- UMI_data %>%
   group_by(sample, fragment, run) %>%
   inner_join(run_info, by = c("run" = "Run_directory")) %>%
-  mutate(mean_cov = mean(COV.TOTAL)) %>%
+  mutate(mean_cov = mean(coverage)) %>%
   group_by(mean_cov, number_of_reads, sample, fragment, run, device) %>%
   summarize()
 

@@ -1,5 +1,5 @@
 process SUMMARIZE_PLASMID_UMI {
-    publishDir "${params.output}/plasmid/${data_type}/${output_type}", mode: 'symlink'
+    publishDir "${params.output}/plasmid/${data_type}/${output_type}/${run}", mode: 'copy'
   input:
     tuple val( run ), path( plasmid_data )
     path mutation_classification

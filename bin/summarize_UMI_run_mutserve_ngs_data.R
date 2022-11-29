@@ -51,7 +51,8 @@ barcodes <-
   mutate(
     sample = str_sub(Sample, end = -6),
     fragment = str_sub(Sample, start = -4)
-  )
+  ) %>%
+  select(!Sample)
 
 NGS <- read_csv(ngs_data) %>%
   filter(pos < STR_start | pos > STR_end) %>%
@@ -62,8 +63,8 @@ NGS <- read_csv(ngs_data) %>%
 mutserve_raw_full_conversions <- mutserve_summary %>%
   filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < UMI_cutoff)) %>%
   mutate(
-    variant_level_UMI = 1,
-    variant_UMI = `TOP-REV`
+    variant_level_umi = 1,
+    variant_umi = `TOP-REV`
   )
 
 ### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
@@ -71,8 +72,8 @@ mutserve_raw_full_conversions <- mutserve_summary %>%
 mutserve_raw_variants <- mutserve_summary %>%
   drop_na(`MINOR-REV`) %>%
   mutate(
-    variant_level_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
-    variant_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
+    variant_level_umi = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
+    variant_umi = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
   )
 
 mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
@@ -84,7 +85,7 @@ mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_varia
 UMI <- mutserve_combined %>%
   inner_join(barcodes, by = c("barcode")) %>%
   dplyr::rename(
-    num_of_consensus_sequences = `COV-TOTAL`,
+    coverage = `COV-TOTAL`,
     Q_score = mean_qual,
     ref_UMI = REF
   )
@@ -103,7 +104,7 @@ UMI_plasmids <- UMI %>%
   )
 
 UMI_plasmids_filtered <- UMI_plasmids %>%
-  filter(variant_level_UMI > UMI_cutoff) %>%
+  filter(variant_level_umi > UMI_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
 
@@ -127,11 +128,9 @@ NGS_UMI_Samples <- NGS_Samples %>%
   ) %>%
   dplyr::rename(
     position = pos,
-    variant_NGS = variant,
-    variant_level_NGS = variant_level,
-    ref_NGS = ref,
-    variant_UMI = variant_UMI,
-    variant_level_UMI = variant_level_UMI,
+    variant_ngs = variant,
+    variant_level_ngs = variant_level,
+    ref_NGS = ref
   ) %>%
   select(
     sample,
@@ -139,27 +138,27 @@ NGS_UMI_Samples <- NGS_Samples %>%
     run,
     position,
     ref_UMI,
-    variant_UMI,
-    variant_level_UMI,
+    variant_umi,
+    variant_level_umi,
     ref_NGS,
-    variant_NGS,
-    variant_level_NGS,
+    variant_ngs,
+    variant_level_ngs,
     run,
     number_of_reads,
-    num_of_consensus_sequences,
+    coverage,
     Q_score
   ) %>%
   mutate(
-    variant_level_UMI = coalesce(variant_level_UMI, 0),
-    variant_level_NGS = coalesce(variant_level_NGS, 0),
-    variance_level_absolute_difference = variant_level_NGS - variant_level_UMI,
-    # Variance_level_relative_difference = (Variant_level_NGS / variant_level_UMI - 1)
+    variant_level_umi = coalesce(variant_level_umi, 0),
+    variant_level_ngs = coalesce(variant_level_ngs, 0),
+    variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
+    # Variance_level_relative_difference = (variant_level_ngs / variant_level_umi - 1)
   )
 
 NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
-  filter(!is.na(variant_NGS) | (variant_level_UMI > UMI_cutoff | variant_level_UMI == 0)) %>%
+  filter(!is.na(variant_ngs) | (variant_level_umi > UMI_cutoff | variant_level_umi == 0)) %>%
   filter(position < STR_start | position > STR_end) %>%
-  filter(variant_NGS != "D")
+  filter(variant_ngs != "D")
 
 
 write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
