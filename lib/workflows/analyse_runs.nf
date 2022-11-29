@@ -36,7 +36,6 @@ qm = "quality measures"
 if (params.all_runs) {
     Channel.fromPath("${params.run_folder}/run*/**/mutserve/*${params.mutserve_summary_pattern}", type: 'file', maxDepth: 2)
     .view()
-    .collect()
     .set{ mutserve_summary_files}
     
     Channel.fromPath("${params.nanostat_folder}/run*/*${params.nanostat_tsv_pattern}", type: 'file')
