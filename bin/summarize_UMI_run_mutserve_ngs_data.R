@@ -115,7 +115,7 @@ mutserve_raw_variants <- mutserve_summary_parsed %>%
     variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
   )
 
-mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
+mutserve_combined <- rbind(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
   mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d"),
         umi_cutoff = umi_cutoff)
 
@@ -158,7 +158,7 @@ UMI_Samples_5104 <- UMI_Samples_temp %>%
   mutate(corresponding_position = pos_2645) %>% 
   select(!pos_2645)
 
-UMI_Samples <- bind_rows(UMI_Samples_2645, UMI_Samples_5104)
+UMI_Samples <- rbind(UMI_Samples_2645, UMI_Samples_5104)
 
 NGS_Samples_group <- NGS %>%
   transmute(sample_fragment = paste(sample, fragment, sep = "_")) %>% 
@@ -178,7 +178,7 @@ UMI_Samples_available <- UMI_Samples %>%
          original_position = pos,
          sample_fragment = paste(sample, fragment, sep = "_"))
 
-UMI_Samples_parsed <- bind_rows(UMI_Samples_available, UMI_Samples_missing)
+UMI_Samples_parsed <- rbind(UMI_Samples_available, UMI_Samples_missing)
 
 ### the groups are used to filter the NGS data before joining both dataframes
 ### exclude all samples that are not covered with the UMI run
