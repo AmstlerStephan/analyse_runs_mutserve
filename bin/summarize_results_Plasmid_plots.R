@@ -27,7 +27,7 @@ umi_data <-
   read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
-  mutate(Position = as.character(Position))
+  mutate(Position = as.numeric(Position))
 
 ### define parameters
 STR_start <- 2472
