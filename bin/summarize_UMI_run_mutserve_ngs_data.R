@@ -33,7 +33,7 @@ nanostat_summary <- argv$nanostat_summary
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
 
-### define parameters 
+### define parameters
 STR_start <- 2472
 STR_end <- 2505
 UMI_cutoff <- 0.003
@@ -50,63 +50,72 @@ AK_samples <- c("AK03|AK07|AK14|AK17|AK33")
 # ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR_mutation_classification.csv"
 
 mutserve_summary <-
-  read_tsv(mutserve_summary, na = c('', 'NA', '-'))
+  read_tsv(mutserve_summary, na = c("", "NA", "-"))
 
 barcodes <-
-  read_tsv(nanostat_summary) %>% 
-  select(run:Sample, number_of_reads, mean_qual) %>% 
-  mutate(sample = str_sub(Sample, end = -6),
-         fragment = str_sub(Sample, start = -4))
+  read_tsv(nanostat_summary) %>%
+  select(run:Sample, number_of_reads, mean_qual) %>%
+  mutate(
+    sample = str_sub(Sample, end = -6),
+    fragment = str_sub(Sample, start = -4)
+  )
 
-NGS <- read_csv(ngs_data) %>% 
-  filter(pos < STR_start | pos > STR_end) %>% 
+NGS <- read_csv(ngs_data) %>%
+  filter(pos < STR_start | pos > STR_end) %>%
   mutate(fragment = as.character(fragment))
 
-### filter mutserve data 
+### filter mutserve data
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
-mutserve_raw_full_conversions <- mutserve_summary %>% 
-  filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < UMI_cutoff)) %>% 
-  mutate(Variant_level_UMI = 1, 
-         Variant_UMI = `TOP-REV`)
+mutserve_raw_full_conversions <- mutserve_summary %>%
+  filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < UMI_cutoff)) %>%
+  mutate(
+    Variant_level_UMI = 1,
+    Variant_UMI = `TOP-REV`
+  )
 
 ### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
 ### Variant level can be over 50% -> take Percentage and variant accordingly
-mutserve_raw_variants <- mutserve_summary %>% 
-  drop_na(`MINOR-REV`) %>% 
-  mutate(Variant_level_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
-         Variant_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`))
+mutserve_raw_variants <- mutserve_summary %>%
+  drop_na(`MINOR-REV`) %>%
+  mutate(
+    Variant_level_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV-PERCENT`, `MINOR-REV-PERCENT`),
+    Variant_UMI = ifelse((`REF` == `MINOR-REV`), `TOP-REV`, `MINOR-REV`)
+  )
 
-mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>% 
-  mutate( barcode = str_extract(SAMPLE, "barcode\\d\\d")) %>% 
+mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
+  mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d")) %>%
   dplyr::rename(pos = POS)
 
 ### Join Barcodes and mutserve data
 
 UMI <- mutserve_combined %>%
-  inner_join(barcodes, by = c('barcode'))
+  inner_join(barcodes, by = c("barcode"))
 
 UMI_plasmids <- UMI %>%
-  filter(grepl('A_B', sample)) %>%
+  filter(grepl("A_B", sample)) %>%
   separate(sample,
-           c(NA, NA, 'Percent_A', 'Percent_B'),
-           sep = '_',
-           remove = FALSE) %>%
+    c(NA, NA, "Percent_A", "Percent_B"),
+    sep = "_",
+    remove = FALSE
+  ) %>%
   mutate(
-    Percent_A = as.numeric(Percent_A) / 10 ,
-    Percent_B = as.numeric(Percent_B) / 10 ,
-    Sample_readable = paste(Percent_A, Percent_B, sep = ':')
+    Percent_A = as.numeric(Percent_A) / 10,
+    Percent_B = as.numeric(Percent_B) / 10,
+    Sample_readable = paste(Percent_A, Percent_B, sep = ":")
   )
 
-UMI_plasmids_filtered <- UMI_plasmids %>% 
+UMI_plasmids_filtered <- UMI_plasmids %>%
   filter(Variant_level_UMI > UMI_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
 
-### Creating the NGS data 
-UMI_Samples <- UMI %>% 
+### Creating the NGS data
+UMI_Samples <- UMI %>%
   filter(grepl(sample_sets, sample))
 
-UMI_Samples_groups <- UMI_Samples %>% group_by(sample, fragment) %>% summarize()
+UMI_Samples_groups <- UMI_Samples %>%
+  group_by(sample, fragment) %>%
+  summarize()
 
 ### the groups are used to filter the NGS data before joining both dataframes
 ### exclude all samples that are not covered with the UMI run
@@ -114,15 +123,16 @@ UMI_Samples_groups <- UMI_Samples %>% group_by(sample, fragment) %>% summarize()
 NGS_Samples <- NGS %>%
   filter(sample %in% UMI_Samples_groups$sample & fragment %in% UMI_Samples_groups$fragment)
 
-NGS_UMI_Samples <- NGS_Samples %>% 
+NGS_UMI_Samples <- NGS_Samples %>%
   full_join(UMI_Samples,
-            by = c('fragment', 'sample', 'pos')) %>%
+    by = c("fragment", "sample", "pos")
+  ) %>%
   dplyr::rename(
     position = pos,
     ref_UMI = REF,
     variant_NGS = variant,
     variant_level_NGS = variant_level,
-    ref_NGS = ref, 
+    ref_NGS = ref,
     num_of_consensus_sequences = `COV-TOTAL`,
     variant_UMI = Variant_UMI,
     variant_level_UMI = Variant_level_UMI,
@@ -138,10 +148,10 @@ NGS_UMI_Samples <- NGS_Samples %>%
     variant_level_UMI,
     ref_NGS,
     variant_NGS,
-    variant_level_NGS, 
-    run, 
+    variant_level_NGS,
+    run,
     number_of_reads,
-    num_of_consensus_sequences, 
+    num_of_consensus_sequences,
     mean_qual
   ) %>%
   mutate(
@@ -151,18 +161,14 @@ NGS_UMI_Samples <- NGS_Samples %>%
     # Variance_level_relative_difference = (Variant_level_NGS / Variant_level_UMI - 1)
   )
 
-NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>% 
+NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
   filter(!is.na(variant_NGS) | (variant_level_UMI > UMI_cutoff | variant_level_UMI == 0)) %>%
   filter(position < STR_start | position > STR_end) %>%
-  filter(variant_NGS != 'D')
+  filter(variant_NGS != "D")
 
 
-write_tsv(UMI, 'UMI_sequencing_mutserve.tsv')
-write_tsv(UMI_plasmids, 'UMI_sequencing_mutserve_plasmids.tsv')
-write_tsv(UMI_plasmids_filtered, 'UMI_sequencing_mutserve_plasmids_filtered.tsv')
-write_tsv(NGS_UMI_Samples, paste(run_path, 'NGS_UMI_samples.tsv', sep = ''))
-write_tsv(NGS_UMI_Samples_filtered, paste(run_path, 'NGS_UMI_samples_filtered.tsv', sep = ''))
-
-
-
-
+write_tsv(UMI, "UMI_sequencing_mutserve.tsv")
+write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
+write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
+write_tsv(NGS_UMI_Samples, paste(run_path, "NGS_UMI_samples.tsv", sep = ""))
+write_tsv(NGS_UMI_Samples_filtered, paste(run_path, "NGS_UMI_samples_filtered.tsv", sep = ""))
