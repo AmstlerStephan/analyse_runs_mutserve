@@ -94,8 +94,8 @@ mutserve_summary_parsed <- mutserve_summary %>%
          ref_umi = `REF`,
          pos = POS)
   
-corresponding_position <- 
-  read_csv(corresponding_position)
+corresponding_positions <- 
+  read_csv(corresponding_positions)
 
 ### filter mutserve data
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
@@ -148,13 +148,13 @@ UMI_Samples_temp <- UMI %>%
 
 UMI_Samples_2645 <- UMI_Samples_temp %>% 
   filter(fragment == "2645") %>% 
-  left_join(corresponding_position, by = c("pos" = "pos_2645")) %>% 
+  left_join(corresponding_positions, by = c("pos" = "pos_2645")) %>% 
   mutate(corresponding_position = pos_5104) %>% 
   select(!pos_5104)
 
 UMI_Samples_5104 <- UMI_Samples_temp %>% 
   filter(fragment == "5104") %>% 
-  left_join(corresponding_position, by = c("pos" = "pos_5104")) %>% 
+  left_join(corresponding_positions, by = c("pos" = "pos_5104")) %>% 
   mutate(corresponding_position = pos_2645) %>% 
   select(!pos_2645)
 
