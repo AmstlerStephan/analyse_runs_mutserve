@@ -5,16 +5,16 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--NGS_UMI_Samples",
+  "--ngs_umi_samples",
   help = "Merged UMI summary files"
 )
 
 argv <- parse_args(parser)
-NGS_UMI_Samples <- argv$NGS_UMI_Samples
+ngs_umi_samples <- argv$ngs_umi_samples
 
 ### load data
-NGS_data <-
-  read_tsv(NGS_UMI_Samples)
+ngs_data <-
+  read_tsv(ngs_umi_samples)
 
 umi_comparison_variant_levels_ngs_dir <-
   dir.create("umi_comparison_variant_levels_ngs")
@@ -71,7 +71,7 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
   dev.off()
 }
 
-groups <- NGS_data %>%
+groups <- ngs_data %>%
   group_by(sample, fragment, run) %>%
   summarize() %>%
   drop_na()
@@ -87,7 +87,7 @@ for (i in 1:number_of_groups) {
   print(Sample)
   print(Fragment)
 
-  data_filtered <- data %>%
+  data_filtered <- ngs_data %>%
     filter(sample == Sample, fragment == Fragment)
 
   r_squared <-

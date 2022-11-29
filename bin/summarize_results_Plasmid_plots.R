@@ -9,7 +9,7 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--UMI_Plasmid_Samples",
+  "--umi_plasmid_samples",
   help = "Merged UMI summary files"
 )
 parser <- add_argument(
@@ -19,12 +19,12 @@ parser <- add_argument(
 )
 
 argv <- parse_args(parser)
-UMI_Plasmid_Samples <- argv$UMI_Plasmid_Samples
+umi_plasmid_samples <- argv$umi_plasmid_samples
 mutation_classification <- argv$mutation_classification
 
 
-UMI_data <-
-  read_tsv(UMI_Plasmid_Samples)
+umi_data <-
+  read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
   mutate(
@@ -51,7 +51,7 @@ get_groups <- function(data) {
   return(groups)
 }
 
-groups <- get_groups(data)
+groups <- get_groups(umi_data)
 number_of_groups <- nrow(groups)
 
 
@@ -63,7 +63,7 @@ for (i in 1:number_of_groups) {
   plasmid_filtered <- plasmid_expected_mutations %>%
     filter(fragment == Fragment)
 
-  data_filtered <- data %>%
+  data_filtered <- umi_data %>%
     filter(sample == Sample, fragment == Fragment, run == Run) %>%
     select(
       sample,

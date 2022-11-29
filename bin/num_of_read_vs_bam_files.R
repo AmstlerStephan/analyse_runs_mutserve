@@ -4,15 +4,15 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--UMI_merged_tsv",
+  "--umi_merged",
   help = "Merged UMI summary files"
 )
 
 argv <- parse_args(parser)
-UMI_merged_tsv <- argv$UMI_merged_tsv
+umi_merged <- argv$umi_merged
 
-UMI_data <-
-  read_tsv(UMI_merged_tsv)
+umi_data <-
+  read_tsv(umi_merged)
 
 ### functions
 
@@ -25,7 +25,7 @@ reads_vs_cons_consensus_sequences_plot <- function(split_by) {
 
 ### Analyze data
 
-reads_vs_final_bam_files <- UMI_data %>%
+reads_vs_final_bam_files <- umi_data %>%
   mutate(mean_cov = mean(COV.TOTAL)) %>%
   group_by(mean_cov, number_of_reads, sample, fragment, run, is_V14) %>%
   summarize()
@@ -36,18 +36,18 @@ reads_vs_final_bam_files <- UMI_data %>%
 reads_vs_cons_consensus_sequences_plot(reads_vs_final_bam_files$run)
 
 ggsave(
-  "num_of_reads_vs_final_consensus_sequences_plot_split_by_run.jpg",
+  "umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_run.jpg",
   device = "jpg"
 )
 
-reads_vs_cons_consensus_sequences_plot(reads_vs_final_bam_files$device)
+reads_vs_cons_consensus_sequences_plot(reads_vs_final_bam_files$is_V14)
 
 ggsave(
-  "num_of_reads_vs_final_consensus_sequences_plot_split_by_kit.jpg",
+  "umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_kit.jpg",
   device = "jpg"
 )
 
 write_tsv(
   reads_vs_final_bam_files,
-  "reads_vs_final_bam_files.tsv"
+  "umi_reads_vs_final_bam_files.tsv"
 )

@@ -9,18 +9,18 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--NGS_UMI_Samples",
+  "--ngs_umi_samples",
   help = "Merged UMI summary files"
 )
 
 argv <- parse_args(parser)
-NGS_UMI_Samples <- argv$NGS_UMI_Samples
+ngs_umi_samples <- argv$ngs_umi_samples
 
 ### load data
-NGS_data <-
-  read.csv(NGS_UMI_Samples)
+ngs_data <-
+  read.csv(ngs_umi_samples)
 
-groups <- NGS_data %>%
+groups <- ngs_data %>%
   group_by(sample, fragment, run) %>%
   summarize() %>%
   drop_na()
@@ -57,7 +57,7 @@ for (i in 1:number_of_groups) {
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
 
-  data_filtered <- data %>%
+  data_filtered <- ngs_data %>%
     filter(sample == Sample, fragment == Fragment)
 
   num_of_observations <- nrow(data_filtered)

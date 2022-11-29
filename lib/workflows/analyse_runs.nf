@@ -78,13 +78,14 @@ workflow ANALYSE_RUN {
 
     SUMMARIZE_RUN( run_summaries, summarize_UMI_run_mutserve_ngs_data )
 
-    if(params.merge_result_files){
+    if(params.merge_umi_result_file){
         SUMMARIZE_RUN.out.umi_all_tsv
         .map{ run, umi_all_tsv -> umi_all_tsv}
         .collect()
         .set{ result_files }
 
         MERGE_RESULT_FILES( result_files, merge_result_files)
+
     }
 
     SUMMARIZE_NGS_UMI_PLOTS( SUMMARIZE_RUN.out.ngs_raw, summarize_results_NGS_plots, plots, raw )

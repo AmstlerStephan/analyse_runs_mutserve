@@ -19,7 +19,7 @@ mutation_classification <- argv$mutation_classification
 
 ### load data
 
-UMI_data <-
+umi_data <-
   read_tsv(UMI_Plasmid_Samples)
 plasmid_expected_mutations <-
   read.csv(mutation_classification) %>%
@@ -59,7 +59,7 @@ detected_mutations <- tibble(
   f1_score_control = numeric()
 )
 
-groups <- get_groups(data)
+groups <- get_groups(umi_data)
 number_of_groups <- nrow(groups)
 path <- paste(result_folder,
   dir_figures,
@@ -76,7 +76,7 @@ for (i in 1:number_of_groups) {
   plasmid_filtered <- plasmid_expected_mutations %>%
     filter(fragment == Fragment)
 
-  data_filtered <- data %>%
+  data_filtered <- umi_data %>%
     filter(sample == Sample, fragment == Fragment, run == Run) %>%
     select(
       sample,
