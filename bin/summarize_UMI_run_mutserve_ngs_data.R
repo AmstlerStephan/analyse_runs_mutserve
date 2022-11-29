@@ -28,7 +28,7 @@ parser <- add_argument(
 )
 
 argv <- parse_args(parser)
-run_path <- argv$run_path
+run <- argv$run
 nanostat_summary <- argv$nanostat_summary
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
@@ -152,7 +152,7 @@ NGS_UMI_Samples <- NGS_Samples %>%
     run,
     number_of_reads,
     num_of_consensus_sequences,
-    mean_qual
+    Q_score
   ) %>%
   mutate(
     variant_level_UMI = coalesce(variant_level_UMI, 0),
@@ -167,8 +167,8 @@ NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
   filter(variant_NGS != "D")
 
 
-write_tsv(UMI, "UMI_sequencing_mutserve.tsv")
+write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
 write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
 write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
-write_tsv(NGS_UMI_Samples, paste(run_path, "NGS_UMI_samples.tsv", sep = ""))
-write_tsv(NGS_UMI_Samples_filtered, paste(run_path, "NGS_UMI_samples_filtered.tsv", sep = ""))
+write_tsv(NGS_UMI_Samples, "NGS_UMI_samples.tsv")
+write_tsv(NGS_UMI_Samples_filtered, "NGS_UMI_samples_filtered.tsv")

@@ -18,7 +18,7 @@ ngs_umi_samples <- argv$ngs_umi_samples
 
 ### load data
 ngs_data <-
-  read.csv(ngs_umi_samples)
+  read_tsv(ngs_umi_samples)
 
 groups <- ngs_data %>%
   group_by(sample, fragment, run) %>%

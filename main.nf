@@ -85,17 +85,15 @@ else {
 log.info "         ===============================================" }
 log.info "         ~ version ${workflow.manifest.version}"
 log.info ""
-log.info "         input dir    : ${workflow.profile.tokenize(",").contains("test") ? "-" : "${params.input}"}"
-log.info "         reference    : ${params.reference}"
+log.info "         input dir    : ${params.run_folder}"
 log.info "         output dir   : ${params.output}"
-log.info "         mode         : ${params.SE ? "single-end" : "paired-end"}"
 log.info ""
 log.info "         ==============================================="
 log.info "         RUN NAME: ${workflow.runName}"
 log.info ""
 
 
-include {ANALYSE_RUN} from './lib/workflows/analyse_run'
+include {ANALYSE_RUN} from './lib/workflows/analyse_runs.nf'
 
 workflow {
 

@@ -4,7 +4,7 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--UMI_Plasmid_Samples",
+  "--umi_plasmid_samples",
   help = "Merged UMI summary files"
 )
 parser <- add_argument(
