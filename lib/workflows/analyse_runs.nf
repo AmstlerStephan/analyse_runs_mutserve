@@ -34,7 +34,7 @@ qm = "quality measures"
 
 // STAGE CHANNELS
 if (params.all_runs) {
-    mutserve_summary_files = Channel.fromPath("${params.run_folder}/run*/ont_pl/**${params.mutserve_summary_pattern}", type: 'file')
+    mutserve_summary_files = Channel.fromPath("${params.run_folder}/run*/mutserve/**${params.mutserve_summary_pattern}", type: 'file')
     .view()
     nanostat_summary_files = Channel.fromPath("${params.nanostat_folder}/run*/*${params.nanostat_tsv_pattern}", type: 'file')
     .view()
