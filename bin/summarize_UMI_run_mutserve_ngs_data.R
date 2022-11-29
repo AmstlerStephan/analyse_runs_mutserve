@@ -165,7 +165,7 @@ NGS_Samples_group <- NGS %>%
   unique()
 
 UMI_Samples_missing <- UMI_Samples %>%
-  anti_join(NGS_Samples_temp, by = "sample_fragment") %>% 
+  anti_join(NGS_Samples_group, by = "sample_fragment") %>% 
   mutate(original_position = pos,
          pos = corresponding_position,
          original_fragment = fragment,
@@ -173,7 +173,7 @@ UMI_Samples_missing <- UMI_Samples %>%
          sample_fragment = paste(sample, fragment, sep = "_"))
 
 UMI_Samples_available <- UMI_Samples %>%
-  inner_join(NGS_Samples_temp, by = "sample_fragment") %>% 
+  inner_join(NGS_Samples_group, by = "sample_fragment") %>% 
   mutate(original_fragment = fragment,
          original_position = pos,
          sample_fragment = paste(sample, fragment, sep = "_"))
