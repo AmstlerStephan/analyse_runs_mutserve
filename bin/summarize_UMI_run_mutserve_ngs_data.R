@@ -26,17 +26,32 @@ parser <- add_argument(
   "--ngs_data",
   help = "File containing the NGS reference data"
 )
+parser <- add_argument(
+  parser,
+  "--umi_cutoff_R9",
+  help = "cutoff value for filtering reads"
+)
+parser <- add_argument(
+  parser,
+  "--umi_cutoff_V14",
+  help = "cutoff value for filtering reads"
+)
+
 
 argv <- parse_args(parser)
 run <- argv$run
 nanostat_summary <- argv$nanostat_summary
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
+umi_cutoff <- ifelse(
+  str_detect(run, "V14"),
+  argv$umi_cutoff_V14,
+  argv$umi_cutoff_R9
+)
 
 ### define parameters
 STR_start <- 2472
 STR_end <- 2505
-UMI_cutoff <- 0.003
 
 sample_sets <- c("AK|SAPHIR")
 SAPHIR_samples <- c("4612|4901|4451|4624|4864|5248|5538|5400")
@@ -61,7 +76,7 @@ NGS <- read_csv(ngs_data) %>%
 ### filter mutserve data
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
 mutserve_raw_full_conversions <- mutserve_summary %>%
-  filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < UMI_cutoff)) %>%
+  filter(REF != `TOP-REV` & (is.na(`MINOR-REV`) | `MINOR-REV-PERCENT` < umi_cutoff)) %>%
   mutate(
     variant_level_umi = 1,
     variant_umi = `TOP-REV`
@@ -77,7 +92,8 @@ mutserve_raw_variants <- mutserve_summary %>%
   )
 
 mutserve_combined <- bind_rows(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
-  mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d")) %>%
+  mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d"),
+        umi_cutoff = umi_cutoff) %>%
   dplyr::rename(pos = POS)
 
 ### Join Barcodes and mutserve data
@@ -104,7 +120,7 @@ UMI_plasmids <- UMI %>%
   )
 
 UMI_plasmids_filtered <- UMI_plasmids %>%
-  filter(variant_level_umi > UMI_cutoff) %>%
+  filter(variant_level_umi > umi_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
 
@@ -146,7 +162,8 @@ NGS_UMI_Samples <- NGS_Samples %>%
     run,
     number_of_reads,
     coverage,
-    Q_score
+    Q_score,
+    umi_cutoff
   ) %>%
   mutate(
     variant_level_umi = coalesce(variant_level_umi, 0),
@@ -156,7 +173,7 @@ NGS_UMI_Samples <- NGS_Samples %>%
   )
 
 NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
-  filter(!is.na(variant_ngs) | (variant_level_umi > UMI_cutoff | variant_level_umi == 0)) %>%
+  filter(!is.na(variant_ngs) | (variant_level_umi > umi_cutoff | variant_level_umi == 0)) %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_ngs != "D")
 

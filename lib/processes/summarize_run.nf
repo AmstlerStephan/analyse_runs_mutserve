@@ -16,6 +16,8 @@ process SUMMARIZE_RUN {
     --run ${run} \
     --nanostat_summary ${nanostat_summary} \
     --mutserve_summary ${mutserve_summary} \
-    --ngs_data ${ngs_data}
+    --ngs_data ${ngs_data} \
+    --umi_cutoff_R9 ${params.umi_cutoff_R9} \
+    --umi_cutoff_V14 ${params.umi_cutoff_V14}
   """
 }
