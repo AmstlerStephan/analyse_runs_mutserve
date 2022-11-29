@@ -2,8 +2,8 @@ process SUMMARIZE_RUN {
     publishDir "${params.output}/umi_summary_files_per_run/${run}/", mode: 'copy'
   input:
     tuple val( run ), path( mutserve_summary ), path( nanostat_summary )
-    path corresponding_positions
     path ngs_data
+    path corresponding_positions
     path summarize_UMI_run_mutserve_ngs_data_R
   output:
     tuple val( "${run}"), path( "UMI_sequencing_mutserve_all*"), emit: umi_all
