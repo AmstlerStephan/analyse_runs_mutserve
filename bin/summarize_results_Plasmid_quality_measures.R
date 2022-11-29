@@ -22,7 +22,8 @@ mutation_classification <- argv$mutation_classification
 umi_data <-
   read_tsv(umi_plasmid_samples)
 plasmid_expected_mutations <-
-  read.csv(mutation_classification)
+  read.csv(mutation_classification) %>%
+  mutate(Position = as.character(Position))
 
 ### define parameters
 STR_start <- 2472
