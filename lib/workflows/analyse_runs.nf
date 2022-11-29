@@ -24,6 +24,7 @@ summarize_results_NGS_plots =                   file("${projectDir}/bin/summariz
 
 ngs_data =                                      file("${params.ngs_data}", checkIfExists: true)
 mutation_classification =                       file("${params.expected_mutations}", checkIfExists: true)
+corresponding_position =                       file("${params.corresponding_position}", checkIfExists: true)
 
 // Set directory names for publishing data
 raw = "raw"
@@ -83,7 +84,7 @@ include {READS_VS_BAM_FILE} from '../processes/reads_vs_bam_file.nf'
 
 workflow ANALYSE_RUN {
 
-    SUMMARIZE_RUN( run_summaries, ngs_data, summarize_UMI_run_mutserve_ngs_data )
+    SUMMARIZE_RUN( run_summaries, ngs_data, corresponding_position, summarize_UMI_run_mutserve_ngs_data )
 
     if(params.merge_umi_result_file){
         SUMMARIZE_RUN.out.umi_all

@@ -21,7 +21,7 @@ ngs_data <-
   read_tsv(ngs_umi_samples)
 
 groups <- ngs_data %>%
-  group_by(sample, fragment, run) %>%
+  group_by(sample, original_fragment, run) %>%
   summarize() %>%
   drop_na()
 
@@ -62,7 +62,7 @@ for (i in 1:number_of_groups) {
   Run <- groups[[3]][i]
 
   data_filtered <- ngs_data %>%
-    filter(sample == Sample, fragment == Fragment)
+    filter(sample == Sample, original_fragment == Fragment)
 
   num_of_observations <- nrow(data_filtered)
 

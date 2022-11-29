@@ -36,6 +36,11 @@ parser <- add_argument(
   "--umi_cutoff_V14",
   help = "cutoff value for filtering reads"
 )
+parser <- add_argument(
+  parser,
+  "--corresponding_mutations",
+  help = "corresponding mutations for the fragments"
+)
 
 
 argv <- parse_args(parser)
@@ -43,18 +48,12 @@ run <- argv$run
 nanostat_summary <- argv$nanostat_summary
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
+corresponding_mutations <- argv$corresponding_mutations
 umi_cutoff <- ifelse(
   str_detect(run, "V14"),
   argv$umi_cutoff_V14,
   argv$umi_cutoff_R9
 )
-
-run <- "run11_V14"
-nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
-mutserve_summary <- "~/UMI_LPA_KIV2/run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
-ngs_data <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-mutation_classification <- "~/UMI_LPA_KIV2/data_ngs/data_ngs/20221129_corresponding_positions.csv"
-umi_cutoff <- 0.003
 
 ### define parameters
 STR_start <- 2472
@@ -96,7 +95,7 @@ mutserve_summary_parsed <- mutserve_summary %>%
          pos = POS)
   
 corresponding_position <- 
-  read_csv(mutation_classification)
+  read_csv(corresponding_position)
 
 ### filter mutserve data
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
