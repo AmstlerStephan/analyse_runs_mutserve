@@ -57,6 +57,9 @@ number_of_groups <- nrow(groups)
 
 
 for (i in 1:number_of_groups) {
+  if (number_of_groups < 1) {
+    break()
+  }
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]

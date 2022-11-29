@@ -53,6 +53,10 @@ detected_mutations <- tibble(
 
 # For loop to create data per Sample and Run
 for (i in 1:number_of_groups) {
+  if (number_of_groups < 1) {
+    break()
+  }
+
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
