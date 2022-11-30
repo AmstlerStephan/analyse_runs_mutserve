@@ -226,7 +226,8 @@ NGS_UMI_Samples <- NGS_Samples %>%
   filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end)
 
 NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
-  filter(!is.na(variant_ngs) | (variant_level_umi > umi_cutoff | variant_level_umi == 0)) %>%
+  filter(variant_level_umi > umi_cutoff | variant_level_umi == 0) %>%
+  #filter(!is.na(variant_ngs)) %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_ngs != "D")
 
