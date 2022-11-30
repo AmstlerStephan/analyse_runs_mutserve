@@ -103,8 +103,8 @@ for (i in 1:number_of_groups) {
     as.numeric(Fragment) - false_positive - false_negative - true_positive
 
   # Specificity, Precision, Recall and Sensitivity ( + F1-score)
-  sensitivity_true_positive_rate <- true_positive / positive
-  specificity_true_negative_rate <- true_negative / negative
+  sensitivity_true_positive_rate <- true_positive / (true_positive + false_negative)
+  specificity_true_negative_rate <- true_negative / (true_negative + false_positive)
   precision_positive_predictive_value <-
     true_positive / (true_positive + false_positive)
   f1_score <-
