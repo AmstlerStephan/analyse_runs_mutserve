@@ -148,13 +148,13 @@ UMI_Samples_temp <- UMI %>%
 
 UMI_Samples_2645 <- UMI_Samples_temp %>% 
   filter(fragment == "2645") %>% 
-  left_join(corresponding_positions, by = c("pos" = "pos_2645")) %>% 
+  left_join(corresponding_positions, by = c("pos" = "pos_2645"), na_matches = "never") %>% 
   mutate(corresponding_position = pos_5104) %>% 
   select(!pos_5104)
 
 UMI_Samples_5104 <- UMI_Samples_temp %>% 
   filter(fragment == "5104") %>% 
-  left_join(corresponding_positions, by = c("pos" = "pos_5104")) %>% 
+  left_join(corresponding_positions, by = c("pos" = "pos_5104"), na_matches = "never") %>% 
   mutate(corresponding_position = pos_2645) %>% 
   select(!pos_2645)
 
@@ -222,12 +222,11 @@ NGS_UMI_Samples <- NGS_Samples %>%
     variant_level_ngs = coalesce(variant_level_ngs, 0),
     variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
     # Variance_level_relative_difference = (variant_level_ngs / variant_level_umi - 1)
-  ) %>% 
+  ) %>%
   filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end)
 
 NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
-  filter(variant_level_umi > umi_cutoff | variant_level_umi == 0) %>%
-  #filter(!is.na(variant_ngs)) %>%
+  filter(!is.na(variant_ngs) | variant_level_umi > umi_cutoff | variant_level_umi == 0 ) %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_ngs != "D")
 
