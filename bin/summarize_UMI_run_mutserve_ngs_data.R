@@ -55,6 +55,12 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_R9
 )
 
+run <- "run11_V14"
+mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
+nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
+ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
+umi_cutoff <- 0.05
 ### define parameters
 STR_start <- 2472
 STR_end <- 2505
@@ -92,7 +98,15 @@ mutserve_summary_parsed <- mutserve_summary %>%
          top_variant_level_umi = ifelse(is.na(`TOP-REV`), `TOP-FWD-PERCENT`, `TOP-REV-PERCENT`),
          coverage = `COV-TOTAL`,
          ref_umi = `REF`,
-         pos = POS)
+         pos = POS) %>% 
+  select(minor_variant_umi,
+         minor_variant_level_umi,
+         top_variant_umi,
+         top_variant_level_umi,
+         coverage,
+         ref_umi,
+         pos,
+         SAMPLE)
   
 corresponding_positions <- 
   read_csv(corresponding_positions)
@@ -148,7 +162,7 @@ UMI_Samples_temp <- UMI %>%
 
 UMI_Samples_2645 <- UMI_Samples_temp %>% 
   filter(fragment == "2645") %>% 
-  left_join(corresponding_positions, by = c("pos" = "pos_2645"), na_matches = "never") %>% 
+  left_join(corresponding_positions, by = c("pos" = "pos_2645")) %>% 
   mutate(corresponding_position = pos_5104) %>% 
   select(!pos_5104)
 
@@ -170,7 +184,8 @@ UMI_Samples_missing <- UMI_Samples %>%
          pos = corresponding_position,
          original_fragment = fragment,
          fragment = ifelse(fragment == "5104", "2645", "5104"),
-         sample_fragment = paste(sample, fragment, sep = "_"))
+         sample_fragment = paste(sample, fragment, sep = "_")) %>% 
+  drop_na(corresponding_position)
 
 UMI_Samples_available <- UMI_Samples %>%
   inner_join(NGS_Samples_group, by = "sample_fragment") %>% 
@@ -234,5 +249,6 @@ NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
 write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
 write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
 write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
+write_tsv(UMI_Samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
 write_tsv(NGS_UMI_Samples, "NGS_UMI_samples.tsv")
 write_tsv(NGS_UMI_Samples_filtered, "NGS_UMI_samples_filtered.tsv")

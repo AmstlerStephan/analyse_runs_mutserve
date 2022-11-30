@@ -7,6 +7,7 @@ process SUMMARIZE_RUN {
     path summarize_UMI_run_mutserve_ngs_data_R
   output:
     tuple val( "${run}"), path( "UMI_sequencing_mutserve_all*"), emit: umi_all
+    tuple val( "${run}"), path( "UMI_sequencing_samples_corresponding_position*"), emit: samples_corr_pos
     tuple val( "${run}"), path( "UMI_sequencing_mutserve_plasmids.tsv"), emit: plasmids_raw
     tuple val( "${run}"), path( "UMI_sequencing_mutserve_plasmids_filtered.tsv"), emit: plasmids_filtered
     tuple val( "${run}"), path( "NGS_UMI_samples.tsv"), emit: ngs_raw
