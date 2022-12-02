@@ -236,12 +236,49 @@ NGS_UMI_Samples <- NGS_Samples %>%
     variant_level_umi = coalesce(variant_level_umi, 0),
     variant_level_ngs = coalesce(variant_level_ngs, 0),
     variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
-    # Variance_level_relative_difference = (variant_level_ngs / variant_level_umi - 1)
   ) %>%
   filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end)
 
-NGS_UMI_Samples_filtered <- NGS_UMI_Samples %>%
-  filter(!is.na(variant_ngs) | variant_level_umi > umi_cutoff | variant_level_umi == 0 ) %>%
+
+UMI_Samples_parsed_filtered <- UMI_Samples_parsed %>% 
+  filter(variant_level_umi >= umi_cutoff)
+
+NGS_UMI_Samples_filtered <- NGS_Samples %>%
+  full_join(UMI_Samples_parsed_filtered,
+    by = c("sample_fragment", "pos")
+  ) %>%
+  dplyr::rename(
+    position = pos,
+    variant_ngs = variant,
+    variant_level_ngs = variant_level,
+    ref_ngs = ref
+  ) %>%
+  select(
+    sample,
+    fragment,
+    run,
+    position,
+    ref_umi,
+    variant_umi,
+    variant_level_umi,
+    ref_ngs,
+    variant_ngs,
+    variant_level_ngs,
+    run,
+    number_of_reads,
+    coverage,
+    Q_score,
+    umi_cutoff,
+    original_position,
+    original_fragment,
+    corresponding_position
+  ) %>%
+  mutate(
+    variant_level_umi = coalesce(variant_level_umi, 0),
+    variant_level_ngs = coalesce(variant_level_ngs, 0),
+    variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
+  ) %>%
+  filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end) %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_ngs != "D")
 
