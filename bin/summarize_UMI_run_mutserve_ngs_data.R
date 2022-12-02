@@ -55,12 +55,12 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_R9
 )
 
-# run <- "run11_V14"
-# mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
-# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
-# ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-# corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
-# umi_cutoff <- 0.05
+run <- "run11_V14"
+mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
+nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
+ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
+umi_cutoff <- 0.005
 ### define parameters
 STR_start <- 2472
 STR_end <- 2505
@@ -88,8 +88,8 @@ barcodes <-
   )
 
 NGS <- read_csv(ngs_data) %>%
-  filter(pos < STR_start | pos > STR_end) %>%
-  mutate(fragment = as.character(fragment))
+  mutate(fragment = as.character(fragment), 
+         sample_fragment = paste(sample, fragment, sep = "_"))
 
 mutserve_summary_parsed <- mutserve_summary %>%
   mutate(minor_variant_umi = ifelse(is.na(`MINOR-REV`), `MINOR-FWD`, `MINOR-REV`),
@@ -152,7 +152,7 @@ UMI_plasmids <- UMI %>%
   )
 
 UMI_plasmids_filtered <- UMI_plasmids %>%
-  filter(variant_level_umi > umi_cutoff) %>%
+  filter(variant_level_umi >= umi_cutoff) %>%
   filter(pos < STR_start | pos > STR_end)
 
 
@@ -174,9 +174,19 @@ UMI_Samples_5104 <- UMI_Samples_temp %>%
 
 UMI_Samples <- rbind(UMI_Samples_2645, UMI_Samples_5104)
 
-NGS_Samples_group <- NGS %>%
-  transmute(sample_fragment = paste(sample, fragment, sep = "_")) %>% 
-  unique()
+UMI_Samples_filtered <- rbind(UMI_Samples_2645, UMI_Samples_5104) %>% 
+  filter(variant_level_umi >= umi_cutoff)
+
+NGS_sample_groups <- unique(NGS$sample_fragment)
+UMI_Samples_groups <- unique(UMI_Samples$sample_fragment) 
+
+available_samples <- intersect(NGS_sample_groups, UMI_Samples_groups)
+missing_samples <- setdiff(UMI_Samples_groups, available_samples)
+
+##### CONTINUE HERE!
+UMI_Samples_missing <- UMI_Samples %>% 
+  filter( grepl(missing_samples, sample_fragment) )
+  
 
 UMI_Samples_missing <- UMI_Samples %>%
   anti_join(NGS_Samples_group, by = "sample_fragment") %>% 
@@ -204,8 +214,10 @@ NGS_Samples <- NGS %>%
 
 NGS_UMI_Samples <- NGS_Samples %>%
   full_join(UMI_Samples_parsed,
-    by = c("sample_fragment", "pos")
-  ) %>%
+    by = c("sample_fragment", "pos"),
+    keep = TRUE
+  ) 
+%>%
   dplyr::rename(
     position = pos,
     variant_ngs = variant,
@@ -239,14 +251,11 @@ NGS_UMI_Samples <- NGS_Samples %>%
   ) %>%
   filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end)
 
-
-UMI_Samples_parsed_filtered <- UMI_Samples_parsed %>% 
-  filter(variant_level_umi >= umi_cutoff)
-
 NGS_UMI_Samples_filtered <- NGS_Samples %>%
   full_join(UMI_Samples_parsed_filtered,
     by = c("sample_fragment", "pos")
-  ) %>%
+  ) 
+%>%
   dplyr::rename(
     position = pos,
     variant_ngs = variant,
@@ -278,7 +287,7 @@ NGS_UMI_Samples_filtered <- NGS_Samples %>%
     variant_level_ngs = coalesce(variant_level_ngs, 0),
     variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
   ) %>%
-  filter(fragment == original_fragment | original_position > overlap_2645_start | original_position < overlap_2645_end) %>%
+  filter(fragment == original_fragment | original_position >= overlap_2645_start | original_position <= overlap_2645_end) %>%
   filter(position < STR_start | position > STR_end) %>%
   filter(variant_ngs != "D")
 
