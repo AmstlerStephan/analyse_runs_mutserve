@@ -193,21 +193,30 @@ UMI <- mutserve_combined %>%
   inner_join(barcodes, by = c("barcode"))
 
 UMI_plasmids <- UMI %>%
-  filter(grepl("A_B", sample)) %>%
-  separate(sample,
-    c(NA, NA, "Percent_A", "Percent_B"),
-    sep = "_",
-    remove = FALSE
-  ) %>%
-  mutate(
-    Percent_A = as.numeric(Percent_A) / 10,
-    Percent_B = as.numeric(Percent_B) / 10,
-    Sample_readable = paste(Percent_A, Percent_B, sep = ":")
-  )
+  filter(grepl("A_B", sample))
 
-UMI_plasmids_filtered <- UMI_plasmids %>%
-  filter(variant_level_umi >= umi_cutoff) %>%
-  filter(pos < STR_start | pos > STR_end)
+if(nrow(UMI_plasmids) != 0){
+  UMI_plasmids_parsed <- UMI_plasmids %>%
+    separate(sample,
+             c(NA, NA, "Percent_A", "Percent_B"),
+             sep = "_",
+             remove = FALSE
+    ) %>%
+    mutate(
+      Percent_A = as.numeric(Percent_A) / 10,
+      Percent_B = as.numeric(Percent_B) / 10,
+      Sample_readable = paste(Percent_A, Percent_B, sep = ":")
+    )
+  
+  UMI_plasmids_filtered <- UMI_plasmids_parsed %>%
+    filter(variant_level_umi >= umi_cutoff) %>%
+    filter(pos < STR_start | pos > STR_end)
+  
+  write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
+  write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
+  
+}
+
 
 
 ### Creating the NGS data
@@ -281,7 +290,7 @@ if(nrow(UMI_samples_temp) != 0){
     
     NGS_UMI_missing_samples <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing)
     NGS_UMI_missing_samples_filtered <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing_filtered)   
-  }else{
+  } else {
     NGS_UMI_missing_samples <- NA
     NGS_UMI_missing_samples_filtered <- NA
   }
@@ -318,6 +327,5 @@ if(nrow(UMI_samples_temp) != 0){
   write_tsv(NGS_UMI_samples_parsed_filtered, "NGS_UMI_samples_filtered.tsv")
 
 }
+
 write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
-write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
-write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
