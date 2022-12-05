@@ -16,7 +16,7 @@ parser <- add_argument(
 argv <- parse_args(parser)
 ngs_umi_samples <- argv$ngs_umi_samples
 
-# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205_no_indel/umi_summary_files_per_run/run12_V14/NGS_UMI_samples_filtered.tsv"
+# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205_no_indel_new_qc/umi_summary_files_per_run/run12_V14/NGS_UMI_samples_filtered.tsv"
 
 ### load data
 ngs_data <-
@@ -63,6 +63,10 @@ for (i in 1:number_of_groups) {
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
 
+  # Sample = "AK03"
+  # Fragment = "5104"
+  # Run = "run12_V14"
+  
   data_filtered <- ngs_data %>%
     filter(sample == Sample, fragment == Fragment)
 
