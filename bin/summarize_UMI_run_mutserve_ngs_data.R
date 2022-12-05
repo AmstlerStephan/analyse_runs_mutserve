@@ -105,17 +105,17 @@ parse_NGS_UMI_samples <- function(UMI_data){
     )
 }
 
-# 
-# run <- "run12_V14"
-# mutserve_summary <- "run12_V14/ont_pl/mutserve/run12_V14_summary_mutserve.txt"
-# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run12_V14/run12_V14_1000_9.tsv"
-# ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-# corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
-# umi_cutoff <- 0.005
+
+run <- "run12_V14"
+mutserve_summary <- "run12_V14/ont_pl/mutserve/run12_V14_summary_mutserve.txt"
+nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run12_V14/run12_V14_1000_9.tsv"
+ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
+umi_cutoff <- 0.005
 
 ### define parameters
 STR_start <- 2472
-STR_end <- 2505
+STR_end <- 2506 ### adapted to 2506 instead of 2505
 overlap_2645_ending_position_front <- 982 # inclusive 982 position are overlapping
 overlap_2645_starting_position_end <- 1431 # from inclusive 1431 positions are overlapping 
 overlap_5104_ending_position_front <- 2645 - overlap_2645_starting_position_end + 1 # inclusive 1215 positions are overlapping
@@ -167,11 +167,12 @@ corresponding_positions <-
 
 ### filter mutserve data
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
+## excluded () | minor_variant_level_umi < umi_cutoff)
 mutserve_raw_full_conversions <- mutserve_summary_parsed %>%
-  filter(ref_umi != top_variant_umi & (is.na(minor_variant_umi) | minor_variant_level_umi < umi_cutoff)) %>%
+  filter(ref_umi != top_variant_umi & is.na(minor_variant_umi)) %>%
   mutate(
     variant_level_umi = 1,
-    variant_umi = top_variant_umi
+    variant_umi = top_variant_umi,
   )
 
 ### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
@@ -303,6 +304,7 @@ if(nrow(UMI_samples_temp) != 0){
              original_position = pos,
              sample_fragment = paste(sample, fragment, sep = "_"),
              reference_available = TRUE)
+    
     UMI_samples_available_filtered <- UMI_samples_available %>% 
       filter(variant_level_umi >= umi_cutoff)
     
@@ -320,7 +322,10 @@ if(nrow(UMI_samples_temp) != 0){
   NGS_UMI_samples_parsed <- parse_NGS_UMI_samples(NGS_UMI_samples)
   NGS_UMI_samples_parsed_filtered <- parse_NGS_UMI_samples(NGS_UMI_samples_filtered) %>%
     filter(position < STR_start | position > STR_end) %>%
-    filter(variant_ngs != "D" | is.na(variant_ngs))
+    filter(variant_ngs != "D" | is.na(variant_ngs)) %>% 
+    filter(variant_level_umi != 1 | !is.na(variant_ngs)) %>% 
+    filter(variant_umi != "D" | is.na(variant_umi)) %>% 
+    filter(position != 1659)
   
   write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
   write_tsv(NGS_UMI_samples_parsed, "NGS_UMI_samples.tsv")
