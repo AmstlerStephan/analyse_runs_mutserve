@@ -16,7 +16,7 @@ parser <- add_argument(
 argv <- parse_args(parser)
 ngs_umi_samples <- argv$ngs_umi_samples
 
-# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205/umi_summary_files_per_run/run12_V14/NGS_UMI_samples.tsv"
+# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205_no_indel/umi_summary_files_per_run/run12_V14/NGS_UMI_samples_filtered.tsv"
 
 ### load data
 ngs_data <-
@@ -64,7 +64,7 @@ for (i in 1:number_of_groups) {
   Run <- groups[[3]][i]
 
   data_filtered <- ngs_data %>%
-    filter(sample == Sample, original_fragment == Fragment)
+    filter(sample == Sample, fragment == Fragment)
 
   num_of_observations <- nrow(data_filtered)
 
@@ -81,6 +81,7 @@ for (i in 1:number_of_groups) {
     nrow()
 
   # OR all positions - positions with SNP
+  # Does not include Deletions or Insertions 
   negative <- as.numeric(Fragment) - positive
 
   # Number of positions that are recognized of having the same SNP
