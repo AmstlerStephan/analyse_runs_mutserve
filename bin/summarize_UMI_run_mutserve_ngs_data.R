@@ -70,7 +70,6 @@ join_NGS_reference_data_UMI_available_samples <- function(UMI_data) {
                 by = c("sample", "fragment", "pos"))
 }
 parse_NGS_UMI_samples <- function(UMI_data){
-  if(nrow(UMI_data) != 0){
   UMI_data %>%
     dplyr::rename(
       position = pos,
@@ -104,16 +103,15 @@ parse_NGS_UMI_samples <- function(UMI_data){
       variant_level_ngs = coalesce(variant_level_ngs, 0),
       variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
     )
-  }
 }
 
 
-# run <- "run11_V14"
-# mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
-# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
-# ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-# corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
-# umi_cutoff <- 0.005
+run <- "run11_V14"
+mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
+nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
+ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
+umi_cutoff <- 0.005
 
 ### define parameters
 STR_start <- 2472
@@ -248,13 +246,20 @@ if(nrow(UMI_samples_temp) != 0){
             NGS_sample_fragment_groups)
       ]
   ### filtet missing samples for available corresponding samples of the NGS data
-  missing_samples_parsed_corresponding_samples_available_parsed <- paste0(missing_samples_parsed_corresponding_samples_available, collapse =  "|")
+  missing_samples_parsed_corresponding_samples_available_parsed <- 
+    paste(missing_samples_parsed_corresponding_samples_available, collapse =  "|")
   missing_samples_corresponding_samples_available_filtered_parsed <-
-    paste(missing_sample_fragments[
-      grepl(
-        paste(str_sub(missing_sample_fragments, end = -6), collapse = "|"),
-        missing_sample_fragments)
-        ], collapse = "|")
+    paste(
+      missing_sample_fragments[
+        grepl(
+          paste(
+            str_sub(
+              missing_samples_parsed_corresponding_samples_available, 
+              end = -6), 
+            collapse = "|"),
+          missing_sample_fragments)
+        ], 
+      collapse = "|")
   
   
   UMI_samples_missing <- UMI_samples %>% 
