@@ -65,7 +65,9 @@ nanostat_summary_files
 
 mutserve_summaries
 .join( nanostat_summaries )
+.view()
 .set{ run_summaries }
+
 
 
 include {SUMMARIZE_RUN} from '../processes/summarize_run.nf'
