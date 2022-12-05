@@ -62,10 +62,6 @@ for (i in 1:number_of_groups) {
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
-  
-  Sample <- "AK17"
-  Fragment <- "5104"
-  Run = "run12"
 
   data_filtered <- ngs_data %>%
     filter(sample == Sample, original_fragment == Fragment)
