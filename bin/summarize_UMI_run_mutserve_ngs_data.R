@@ -63,6 +63,7 @@ join_NGS_reference_data_UMI_missing_samples <- function(UMI_data) {
                pos >= overlap_5104_starting_position_end) %>% 
       full_join(UMI_data,
                 by = c("sample", "fragment", "pos"))
+    
   }
 }
 join_NGS_reference_data_UMI_available_samples <- function(UMI_data) {
@@ -74,6 +75,7 @@ join_NGS_reference_data_UMI_available_samples <- function(UMI_data) {
   }
 }
 parse_NGS_UMI_samples <- function(UMI_data){
+  if(nrow(UMI_data) != 0){
   UMI_data %>%
     dplyr::rename(
       position = pos,
@@ -107,6 +109,7 @@ parse_NGS_UMI_samples <- function(UMI_data){
       variant_level_ngs = coalesce(variant_level_ngs, 0),
       variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
     )
+  }
 }
 
 
