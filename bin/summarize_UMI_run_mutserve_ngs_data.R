@@ -212,7 +212,7 @@ if(nrow(UMI_plasmids) != 0){
     filter(variant_level_umi >= umi_cutoff) %>%
     filter(pos < STR_start | pos > STR_end)
   
-  write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
+  write_tsv(UMI_plasmids_parsed, "UMI_sequencing_mutserve_plasmids.tsv")
   write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
   
 }
