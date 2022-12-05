@@ -65,6 +65,7 @@ nanostat_summary_files
 
 mutserve_summaries
 .join( nanostat_summaries )
+.view()
 .set{ run_summaries }
 
 
