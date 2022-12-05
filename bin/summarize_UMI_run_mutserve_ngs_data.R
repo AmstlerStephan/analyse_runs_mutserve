@@ -106,12 +106,12 @@ parse_NGS_UMI_samples <- function(UMI_data){
 }
 
 
-run <- "run11_V14"
-mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
-nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
-ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
-corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
-umi_cutoff <- 0.005
+# run <- "run11_V14"
+# mutserve_summary <- "run11_V14/ont_pl/mutserve/run11_V14_summary_mutserve.txt"
+# nanostat_summary <- "~/post_pipeline_analysis/QC/Nanostat_parsed_merged/run11_V14/run11_V14_1000_9.tsv"
+# ngs_data <- "data_ngs/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+# corresponding_positions <- "data_ngs/data_ngs/20221129_corresponding_positions.csv"
+# umi_cutoff <- 0.005
 
 ### define parameters
 STR_start <- 2472
