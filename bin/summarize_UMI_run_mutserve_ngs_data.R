@@ -56,18 +56,22 @@ umi_cutoff <- ifelse(
 )
 
 join_NGS_reference_data_UMI_missing_samples <- function(UMI_data) {
-  NGS %>% 
-    filter(grepl(missing_samples_parsed_corresponding_samples_available_parsed, sample_fragment)) %>%
-    filter(pos <= overlap_5104_ending_position_front | 
-             pos >= overlap_5104_starting_position_end) %>% 
-    full_join(UMI_data,
-              by = c("sample", "fragment", "pos"))
+  if (nrow(UMI_data) != 0){ 
+    NGS %>% 
+      filter(grepl(missing_samples_parsed_corresponding_samples_available_parsed, sample_fragment)) %>%
+      filter(pos <= overlap_5104_ending_position_front | 
+               pos >= overlap_5104_starting_position_end) %>% 
+      full_join(UMI_data,
+                by = c("sample", "fragment", "pos"))
+  }
 }
 join_NGS_reference_data_UMI_available_samples <- function(UMI_data) {
-  NGS %>% 
-    filter(grepl(available_sample_fragments_parsed, sample_fragment)) %>%
-    full_join(UMI_data,
-              by = c("sample", "fragment", "pos"))
+  if (nrow(UMI_data) != 0){ 
+    NGS %>% 
+      filter(grepl(available_sample_fragments_parsed, sample_fragment)) %>%
+      full_join(UMI_data,
+                by = c("sample", "fragment", "pos"))
+  }
 }
 parse_NGS_UMI_samples <- function(UMI_data){
   UMI_data %>%
