@@ -56,23 +56,18 @@ umi_cutoff <- ifelse(
 )
 
 join_NGS_reference_data_UMI_missing_samples <- function(UMI_data) {
-  if (nrow(UMI_data) != 0){ 
     NGS %>% 
       filter(grepl(missing_samples_parsed_corresponding_samples_available_parsed, sample_fragment)) %>%
       filter(pos <= overlap_5104_ending_position_front | 
                pos >= overlap_5104_starting_position_end) %>% 
       full_join(UMI_data,
                 by = c("sample", "fragment", "pos"))
-    
-  }
 }
 join_NGS_reference_data_UMI_available_samples <- function(UMI_data) {
-  if (nrow(UMI_data) != 0){ 
     NGS %>% 
       filter(grepl(available_sample_fragments_parsed, sample_fragment)) %>%
       full_join(UMI_data,
                 by = c("sample", "fragment", "pos"))
-  }
 }
 parse_NGS_UMI_samples <- function(UMI_data){
   if(nrow(UMI_data) != 0){
@@ -221,86 +216,89 @@ UMI_plasmids_filtered <- UMI_plasmids %>%
 UMI_samples_temp <- UMI %>%
   filter(grepl(sample_sets, sample))
 
-UMI_samples_2645 <- UMI_samples_temp %>% 
-  filter(fragment == "2645") %>% 
-  left_join(corresponding_positions, by = c("pos" = "pos_2645")) %>% 
-  mutate(corresponding_position = pos_5104) %>% 
-  select(!pos_5104)
-
-UMI_samples_5104 <- UMI_samples_temp %>% 
-  filter(fragment == "5104") %>% 
-  left_join(corresponding_positions, by = c("pos" = "pos_5104")) %>% 
-  mutate(corresponding_position = pos_2645) %>% 
-  select(!pos_2645)
-
-UMI_samples <- rbind(UMI_samples_2645, UMI_samples_5104)
-
-NGS_sample_fragment_groups <- unique(NGS$sample_fragment)
-UMI_sample_fragment_groups <- unique(UMI_samples$sample_fragment) 
-
-available_sample_fragments <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
-available_sample_fragments_parsed <- paste(available_sample_fragments, collapse = "|")
-
-### get missing samples and check if the corresponding fragment exists in the NGS data
-missing_sample_fragments <- setdiff(UMI_sample_fragment_groups, available_sample_fragments)
-missing_samples <- str_sub(missing_sample_fragments, end = -6)
-missing_samples_parsed <- paste(missing_samples, collapse = "|")
-missing_samples_parsed_corresponding_samples_available <- 
-  NGS_sample_fragment_groups[
-    grepl(missing_samples_parsed, 
-          NGS_sample_fragment_groups)
-    ]
-### filtet missing samples for available corresponding samples of the NGS data
-missing_samples_parsed_corresponding_samples_available_parsed <- paste0(missing_samples_parsed_corresponding_samples_available, collapse =  "|")
-missing_samples_corresponding_samples_available_filtered_parsed <-
-  paste(missing_sample_fragments[
-    grepl(
-      paste(str_sub(missing_sample_fragments, end = -6), collapse = "|"),
-      missing_sample_fragments)
-      ], collapse = "|")
-
-
-UMI_samples_missing <- UMI_samples %>% 
-  filter( grepl(missing_samples_corresponding_samples_available_filtered_parsed, sample_fragment) ) %>% 
-  mutate(original_position = pos,
-         pos = corresponding_position,
-         original_fragment = fragment,
-         fragment = ifelse(fragment == "5104", "2645", "5104"),
-         sample_fragment = paste(sample, fragment, sep = "_"),
-         reference_available = FALSE,
-         ) %>% 
-  drop_na(corresponding_position)
-
-UMI_samples_available <- UMI_samples %>% 
-  filter(grepl(available_sample_fragments_parsed, sample_fragment)) %>% 
-  mutate(original_fragment = fragment,
-         original_position = pos,
-         sample_fragment = paste(sample, fragment, sep = "_"),
-         reference_available = TRUE)
-
-UMI_samples_missing_filtered <- UMI_samples_missing %>% 
-  filter(variant_level_umi >= umi_cutoff)
-UMI_samples_available_filtered <- UMI_samples_available %>% 
-  filter(variant_level_umi >= umi_cutoff)
-
-
-NGS_UMI_available_samples <- join_NGS_reference_data_UMI_available_samples(UMI_samples_available)
-NGS_UMI_missing_samples <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing)
-NGS_UMI_available_samples_filtered <- join_NGS_reference_data_UMI_available_samples(UMI_samples_available_filtered)
-NGS_UMI_missing_samples_filtered <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing_filtered)
+if(nrow(UMI_samples_temp) != 0){
   
-UMI_samples_parsed <- rbind(NGS_UMI_available_samples, NGS_UMI_missing_samples)
-UMI_samples_parsed_filtered <- rbind(NGS_UMI_available_samples_filtered, NGS_UMI_missing_samples_filtered)
+  UMI_samples_2645 <- UMI_samples_temp %>% 
+    filter(fragment == "2645") %>% 
+    left_join(corresponding_positions, by = c("pos" = "pos_2645")) %>% 
+    mutate(corresponding_position = pos_5104) %>% 
+    select(!pos_5104)
+  
+  UMI_samples_5104 <- UMI_samples_temp %>% 
+    filter(fragment == "5104") %>% 
+    left_join(corresponding_positions, by = c("pos" = "pos_5104")) %>% 
+    mutate(corresponding_position = pos_2645) %>% 
+    select(!pos_2645)
+  
+  UMI_samples <- rbind(UMI_samples_2645, UMI_samples_5104)
+  
+  NGS_sample_fragment_groups <- unique(NGS$sample_fragment)
+  UMI_sample_fragment_groups <- unique(UMI_samples$sample_fragment) 
+  
+  available_sample_fragments <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
+  available_sample_fragments_parsed <- paste(available_sample_fragments, collapse = "|")
+  
+  ### get missing samples and check if the corresponding fragment exists in the NGS data
+  missing_sample_fragments <- setdiff(UMI_sample_fragment_groups, available_sample_fragments)
+  missing_samples <- str_sub(missing_sample_fragments, end = -6)
+  missing_samples_parsed <- paste(missing_samples, collapse = "|")
+  missing_samples_parsed_corresponding_samples_available <- 
+    NGS_sample_fragment_groups[
+      grepl(missing_samples_parsed, 
+            NGS_sample_fragment_groups)
+      ]
+  ### filtet missing samples for available corresponding samples of the NGS data
+  missing_samples_parsed_corresponding_samples_available_parsed <- paste0(missing_samples_parsed_corresponding_samples_available, collapse =  "|")
+  missing_samples_corresponding_samples_available_filtered_parsed <-
+    paste(missing_sample_fragments[
+      grepl(
+        paste(str_sub(missing_sample_fragments, end = -6), collapse = "|"),
+        missing_sample_fragments)
+        ], collapse = "|")
+  
+  
+  UMI_samples_missing <- UMI_samples %>% 
+    filter( grepl(missing_samples_corresponding_samples_available_filtered_parsed, sample_fragment) ) %>% 
+    mutate(original_position = pos,
+           pos = corresponding_position,
+           original_fragment = fragment,
+           fragment = ifelse(fragment == "5104", "2645", "5104"),
+           sample_fragment = paste(sample, fragment, sep = "_"),
+           reference_available = FALSE,
+           ) %>% 
+    drop_na(corresponding_position)
+  
+  UMI_samples_available <- UMI_samples %>% 
+    filter(grepl(available_sample_fragments_parsed, sample_fragment)) %>% 
+    mutate(original_fragment = fragment,
+           original_position = pos,
+           sample_fragment = paste(sample, fragment, sep = "_"),
+           reference_available = TRUE)
+  
+  UMI_samples_missing_filtered <- UMI_samples_missing %>% 
+    filter(variant_level_umi >= umi_cutoff)
+  UMI_samples_available_filtered <- UMI_samples_available %>% 
+    filter(variant_level_umi >= umi_cutoff)
+  
+  
+  NGS_UMI_available_samples <- join_NGS_reference_data_UMI_available_samples(UMI_samples_available)
+  NGS_UMI_missing_samples <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing)
+  NGS_UMI_available_samples_filtered <- join_NGS_reference_data_UMI_available_samples(UMI_samples_available_filtered)
+  NGS_UMI_missing_samples_filtered <- join_NGS_reference_data_UMI_missing_samples(UMI_samples_missing_filtered)
+  
+  UMI_samples_parsed <- rbind(NGS_UMI_available_samples, NGS_UMI_missing_samples)
+  UMI_samples_parsed_filtered <- rbind(NGS_UMI_available_samples_filtered, NGS_UMI_missing_samples_filtered)
+  
+  NGS_UMI_samples <- parse_NGS_UMI_samples(UMI_samples_parsed)
+  NGS_UMI_samples_filtered <- parse_NGS_UMI_samples(UMI_samples_parsed_filtered) %>%
+    filter(position < STR_start | position > STR_end) %>%
+    filter(variant_ngs != "D")
+  
+  write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
+  write_tsv(NGS_UMI_samples, "NGS_UMI_samples.tsv")
+  write_tsv(NGS_UMI_samples_filtered, "NGS_UMI_samples_filtered.tsv")
 
-NGS_UMI_samples <- parse_NGS_UMI_samples(UMI_samples_parsed)
-NGS_UMI_samples_filtered <- parse_NGS_UMI_samples(UMI_samples_parsed_filtered) %>%
-  filter(position < STR_start | position > STR_end) %>%
-  filter(variant_ngs != "D")
-
-
+}
 write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
 write_tsv(UMI_plasmids, "UMI_sequencing_mutserve_plasmids.tsv")
 write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
-write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
-write_tsv(NGS_UMI_samples, "NGS_UMI_samples.tsv")
-write_tsv(NGS_UMI_samples_filtered, "NGS_UMI_samples_filtered.tsv")
