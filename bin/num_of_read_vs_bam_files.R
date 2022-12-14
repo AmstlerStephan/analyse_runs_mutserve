@@ -1,6 +1,5 @@
 library(tidyverse)
 library(argparser)
-library(patchwork)
 
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
