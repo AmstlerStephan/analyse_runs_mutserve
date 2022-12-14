@@ -103,7 +103,7 @@ workflow ANALYSE_RUN {
     SUMMARIZE_NGS_UMI_FILTERED_QM( SUMMARIZE_RUN.out.ngs_filtered, summarize_results_NGS_quality_measures, qm, filtered )
     SUMMARIZE_PLASMID_UMI_PLOTS( SUMMARIZE_RUN.out.plasmids_raw, mutation_classification, summarize_results_plasmid_plots, plots, raw ) 
     SUMMARIZE_PLASMID_UMI_QM( SUMMARIZE_RUN.out.plasmids_raw, mutation_classification, summarize_results_plasmid_quality_measures, qm, raw )
-    SUMMARIZE_PLASMID_UMI_FILTERED_PLOTS( SUMMARIZE_RUN.out.plasmids_raw, mutation_classification, summarize_results_plasmid_plots, plots, filtered )
-    SUMMARIZE_PLASMID_UMI_FILTERED_QM( SUMMARIZE_RUN.out.plasmids_raw, mutation_classification, summarize_results_plasmid_quality_measures, qm, filtered )
+    SUMMARIZE_PLASMID_UMI_FILTERED_PLOTS( SUMMARIZE_RUN.out.plasmids_filtered, mutation_classification, summarize_results_plasmid_plots, plots, filtered )
+    SUMMARIZE_PLASMID_UMI_FILTERED_QM( SUMMARIZE_RUN.out.plasmids_filtered, mutation_classification, summarize_results_plasmid_quality_measures, qm, filtered )
 
 }
