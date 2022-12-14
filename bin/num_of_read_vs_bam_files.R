@@ -64,7 +64,7 @@ for ( Run in unique(reads_vs_final_bam_files$run)){
     scale_y_continuous(breaks = seq(0, 1000, by = 200))
   
   ggsave(
-    paste("umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_run.jpg", Run, sep = "_"),
+    paste0("umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_run_", Run, ".jpg"),
     device = "jpg"
   )
   
@@ -108,7 +108,7 @@ for ( Chemistry in unique(reads_vs_final_bam_files$is_V14)){
     scale_y_continuous(breaks = seq(0, 1000, by = 200))
   
   ggsave(
-    paste("umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_run.jpg", Chemistry, sep = "_"),
+    paste0("umi_num_of_reads_vs_final_consensus_sequences_plot_split_by_run_", Run, ".jpg"),
     device = "jpg"
   )
   
