@@ -16,7 +16,7 @@ parser <- add_argument(
 argv <- parse_args(parser)
 ngs_umi_samples <- argv$ngs_umi_samples
 
-# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205/umi_summary_files_per_run/run12_V14/NGS_UMI_samples.tsv"
+# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205_no_indel_new_qc/umi_summary_files_per_run/run12_V14/NGS_UMI_samples_filtered.tsv"
 
 ### load data
 ngs_data <-
@@ -63,9 +63,13 @@ for (i in 1:number_of_groups) {
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
 
-  data_filtered <- ngs_data %>%
-    filter(sample == Sample, original_fragment == Fragment)
+  # Sample = "SAPHIR_4901"
+  # Fragment = "5104"
+  # Run = "run12_V14"
 
+  data_filtered <- ngs_data %>%
+    filter(sample == Sample, fragment == Fragment)
+  
   num_of_observations <- nrow(data_filtered)
 
   num_of_reads <- mean(data_filtered$number_of_reads, na.rm = TRUE)
@@ -73,7 +77,15 @@ for (i in 1:number_of_groups) {
   Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
 
   coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
+  
+  num_of_muts_UMI <- data_filtered %>% 
+    filter(!is.na(variant_umi)) %>% 
+    nrow()
 
+  num_of_muts_NGS <- length(which(data_filtered$variant_level_ngs > 0))
+  num_of_deletions_NGS <- length(which(data_filtered$variant_ngs == "D"))
+  
+  
   # View(data_filtered %>% filter(as.character(variant_umi) != as.character(variant_ngs)))
 
   positive <- data_filtered %>%
@@ -81,6 +93,7 @@ for (i in 1:number_of_groups) {
     nrow()
 
   # OR all positions - positions with SNP
+  # Does not include Deletions or Insertions 
   negative <- as.numeric(Fragment) - positive
 
   # Number of positions that are recognized of having the same SNP
