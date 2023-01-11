@@ -51,7 +51,7 @@ if (params.all_runs) {
     .view()
     .set{ mutserve_summary_files}
     
-    Channel.fromPath("${params.nanostat_folder}/*${params.nanostat_tsv_pattern}", type: 'file')
+    Channel.fromPath("${params.nanostat_folder}/**${params.nanostat_tsv_pattern}", type: 'file')
     .view()
     .set{ nanostat_summary_files }
 }
