@@ -32,6 +32,8 @@ filtered = "filtered"
 plots = "plots"
 qm = "quality measures"
 
+print params.all_runs
+print params.mutserve_dir
 
 // STAGE CHANNELS
 if (params.all_runs) {
