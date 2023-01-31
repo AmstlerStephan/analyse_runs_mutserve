@@ -322,9 +322,7 @@ if(nrow(UMI_samples_temp) != 0){
   NGS_UMI_samples_parsed <- parse_NGS_UMI_samples(NGS_UMI_samples)
   NGS_UMI_samples_parsed_filtered <- parse_NGS_UMI_samples(NGS_UMI_samples_filtered) %>%
     filter(position < STR_start | position > STR_end) %>%
-    filter(variant_ngs != "D" | is.na(variant_ngs)) %>% 
     filter(variant_level_umi != 1 | !is.na(variant_ngs)) %>% 
-    filter(variant_umi != "D" | is.na(variant_umi)) %>% 
     filter(position != 1659)
   
   write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
