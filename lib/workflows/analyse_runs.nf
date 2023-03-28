@@ -46,6 +46,7 @@ if (params.all_runs) {
     .set{ nanostat_summary_files }
 }else if (params.mutserve_dir) {
     Channel.fromPath("${params.run_folder}/run*/*${params.mutserve_summary_pattern}", type: 'file')
+    .view()
     .set{ mutserve_summary_files}
     
     Channel.fromPath("${params.nanostat_folder}/run*/*${params.nanostat_tsv_pattern}", type: 'file')
