@@ -227,6 +227,7 @@ if(nrow(UMI_samples) != 0){
   
   NGS_UMI_samples_parsed_filtered <- 
     NGS_UMI_samples_parsed %>% 
+    mutate(variant_level_umi = ifelse(variant_level_umi < umi_cutoff & !is.na(variant_level_ngs), 0, variant_level_umi)) %>%
     filter(variant_level_umi >= umi_cutoff | variant_level_umi == 0) %>% 
     filter(position < STR_start | position > STR_end)
   
