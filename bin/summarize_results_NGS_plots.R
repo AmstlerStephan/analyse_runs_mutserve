@@ -77,7 +77,7 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
 }
 
 groups <- ngs_data %>%
-  group_by(sample, original_fragment, run) %>%
+  group_by(sample, fragment, run) %>%
   summarize() %>%
   drop_na()
 
@@ -97,7 +97,7 @@ for (i in 1:number_of_groups) {
   print(Fragment)
 
   data_filtered <- ngs_data %>%
-    filter(sample == Sample, original_fragment == Fragment)
+    filter(sample == Sample, fragment == Fragment)
 
   r_squared <-
     data_filtered %>% lm(variant_level_umi ~ variant_level_ngs, data = .)
