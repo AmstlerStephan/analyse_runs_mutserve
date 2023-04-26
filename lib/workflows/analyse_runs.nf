@@ -99,7 +99,7 @@ include {READS_VS_BAM_FILE} from '../processes/reads_vs_bam_file.nf'
 
 workflow ANALYSE_RUN {
 
-    SUMMARIZE_RUN( run_summaries, ngs_data, corresponding_positions, summarize_UMI_run_mutserve_ngs_data )
+    SUMMARIZE_RUN( run_summaries, ngs_data, summarize_UMI_run_mutserve_ngs_data )
 
     if(params.merge_umi_result_file){
         SUMMARIZE_RUN.out.umi_all
