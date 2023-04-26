@@ -48,6 +48,7 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_V14,
   argv$umi_cutoff_R9
 )
+
 ### define parameters
 STR_start <- 2472
 STR_end <- 2506 ### adapted to 2506 instead of 2505
@@ -75,7 +76,14 @@ NGS <- read_csv(ngs_data) %>%
   mutate(fragment = as.character(fragment), 
          sample_fragment = paste(sample, fragment, sep = "_"))
 
-if(pipeline == "snakemake"){
+fwd_muts <- mutserve_summary %>% 
+  filter(!is.na(`TOP-FWD`)) %>%
+  nrow()
+rev_muts <- mutserve_summary %>% 
+  filter(!is.na(`TOP-REV`)) %>%
+  nrow()
+
+if(fwd_muts < rev_muts){
   mutserve_summary_parsed <- mutserve_summary %>%
     mutate(minor_variant_umi = `MINOR-REV`,
            minor_variant_level_umi = `MINOR-REV-PERCENT`,
