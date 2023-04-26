@@ -16,14 +16,12 @@ parser <- add_argument(
 argv <- parse_args(parser)
 ngs_umi_samples <- argv$ngs_umi_samples
 
-# ngs_umi_samples <- "~/UMI_LPA_KIV2/results_adapted_nf_pipeline_20221205_no_indel_new_qc/umi_summary_files_per_run/run12_V14/NGS_UMI_samples_filtered.tsv"
-
 ### load data
 ngs_data <-
   read_tsv(ngs_umi_samples)
 
 groups <- ngs_data %>%
-  group_by(sample, original_fragment, run) %>%
+  group_by(sample, fragment, run) %>%
   summarize() %>%
   drop_na()
 
@@ -63,10 +61,6 @@ for (i in 1:number_of_groups) {
   Fragment <- groups[[2]][i]
   Run <- groups[[3]][i]
 
-  # Sample = "SAPHIR_4901"
-  # Fragment = "5104"
-  # Run = "run12_V14"
-
   data_filtered <- ngs_data %>%
     filter(sample == Sample, fragment == Fragment)
   
@@ -84,9 +78,6 @@ for (i in 1:number_of_groups) {
 
   num_of_muts_NGS <- length(which(data_filtered$variant_level_ngs > 0))
   num_of_deletions_NGS <- length(which(data_filtered$variant_ngs == "D"))
-  
-  
-  # View(data_filtered %>% filter(as.character(variant_umi) != as.character(variant_ngs)))
 
   positive <- data_filtered %>%
     filter(!is.na(variant_ngs)) %>%
