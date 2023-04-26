@@ -3,7 +3,6 @@ process SUMMARIZE_RUN {
   input:
     tuple val( run ), path( mutserve_summary ), path( nanostat_summary )
     path ngs_data
-    path corresponding_positions
     path summarize_UMI_run_mutserve_ngs_data_R
   output:
     tuple val( "${run}"), path( "UMI_sequencing_mutserve_all*"), optional: true, emit: umi_all
@@ -20,7 +19,6 @@ process SUMMARIZE_RUN {
     --mutserve_summary ${mutserve_summary} \
     --ngs_data ${ngs_data} \
     --umi_cutoff_R9 ${params.umi_cutoff_R9} \
-    --umi_cutoff_V14 ${params.umi_cutoff_V14} \
-    --corresponding_positions ${corresponding_positions}
+    --umi_cutoff_V14 ${params.umi_cutoff_V14}
   """
 }
