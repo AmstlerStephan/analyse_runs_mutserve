@@ -58,8 +58,6 @@ sample_sets <- c("AK|SAPHIR")
 mutserve_summary <-
   read_tsv(mutserve_summary, na = c("", "NA", "-"))
 
-pipeline <- ifelse(str_detect(mutserve_summary$SAMPLE[1], "lpa"), "snakemake", "nextflow")
-
 barcodes <-
   read_tsv(nanostat_summary) %>%
   select(run:Sample, number_of_reads, mean_qual) %>%
