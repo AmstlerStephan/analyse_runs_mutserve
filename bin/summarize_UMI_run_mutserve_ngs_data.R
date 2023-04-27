@@ -124,20 +124,28 @@ if(fwd_muts < rev_muts){
 ### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
 ## excluded () | minor_variant_level_umi < umi_cutoff)
 mutserve_raw_full_conversions <- mutserve_summary_parsed %>%
-  filter(ref_umi != top_variant_umi & is.na(minor_variant_umi)) %>%
+  filter(ref_umi != top_variant_umi & ( is.na(minor_variant_umi) | minor_variant_level_umi < umi_cutoff )) %>%
   mutate(
-    variant_level_umi = 1,
+    variant_level_umi = top_variant_level_umi,
     variant_umi = top_variant_umi,
   )
 
-### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
-### Variant level can be over 50% -> take Percentage and variant accordingly
-mutserve_raw_variants <- mutserve_summary_parsed %>%
-  drop_na(minor_variant_umi) %>%
+mutserve_raw_variants <- mutserve_summary_parsed %>% 
+  anti_join(mutserve_raw_full_conversions, by = c("SAMPLE", "pos")) %>%
+  drop_na(minor_variant_umi) %>% 
   mutate(
     variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
     variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
   )
+
+### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
+### Variant level can be over 50% -> take Percentage and variant accordingly
+# mutserve_raw_variants <- mutserve_summary_parsed %>%
+#   drop_na(minor_variant_umi) %>%
+#   mutate(
+#     variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
+#     variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
+#   )
 
 mutserve_combined <- rbind(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
   mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d"),
@@ -225,15 +233,16 @@ if(nrow(UMI_samples) != 0){
       variance_level_absolute_difference = variant_level_ngs - variant_level_umi,
     )
   
+  # filter for:
+  # umi variant below the threshold, but keep all ngs variants
+  # STR positions
+  # full conversions that are not considered as variants in the ngs dataset
   NGS_UMI_samples_parsed_filtered <- 
     NGS_UMI_samples_parsed %>% 
-    mutate(variant_level_umi = ifelse(variant_level_umi < umi_cutoff & !is.na(variant_ngs), 0, variant_level_umi)) %>%
-    filter(variant_level_umi >= umi_cutoff | variant_level_umi == 0) %>% 
-    filter(position < STR_start | position > STR_end)
-  
-    # filter(variant_level_umi != 1 | !is.na(variant_ngs)) %>% 
-    # filter(position != 1659)
-    # 
+    filter(variant_level_umi >= umi_cutoff | variant_level_ngs > 0) %>% 
+    filter(position < STR_start | position > STR_end) %>% 
+    filter(!(is.na(variant_ngs) & variant_level_umi == 1 ))
+
   write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
   write_tsv(NGS_UMI_samples_parsed, "NGS_UMI_samples.tsv")
   write_tsv(NGS_UMI_samples_parsed_filtered, "NGS_UMI_samples_filtered.tsv")
