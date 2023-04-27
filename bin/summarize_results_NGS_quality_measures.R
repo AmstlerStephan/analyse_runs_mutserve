@@ -12,8 +12,6 @@ argv <- parse_args(parser)
 ngs_umi_samples <- argv$ngs_umi_samples
 umi_cutoff <- 0.0085
 
-ngs_umi_samples <- "NGS_UMI_samples_filtered.tsv"
-
 ### load data
 ngs_data <-
   read_tsv(ngs_umi_samples)
