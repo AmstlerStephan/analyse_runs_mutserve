@@ -84,8 +84,8 @@ for (i in 1:number_of_groups) {
       Q_score,
       Sample_readable
     ) %>%
-    merge(plasmid_filtered, by.x = "pos", by.y = "Position", all = TRUE) %>%
-    # full_join(plasmid_filtered, by = c("pos" = "Position")) %>%
+    # merge(plasmid_filtered, by.x = "pos", by.y = "Position", all = TRUE) %>%
+    full_join(plasmid_filtered, by = c("pos" = "Position")) %>%
     filter(pos < STR_start | pos > STR_end)
 
   if (100 %in% data_filtered$Percent_A) {
