@@ -85,6 +85,7 @@ negative <- as.numeric(Fragment) - positive
 
 # Number of positions that are recognized of having the same SNP
 true_positive <- data_filtered %>%
+  filter(variant_level_umi >= umi_cutoff) %>% 
   filter(!is.na(variant_ngs)) %>%
   filter(as.character(variant_umi) == as.character(variant_ngs)) %>%
   nrow()
@@ -97,7 +98,7 @@ false_positive <- data_filtered %>%
 
 # Number of positions where a SNP was found in the NGS data, but not in the UMI data
 false_negative <- data_filtered %>%
-  filter(is.na(variant_umi)) %>%
+  filter(is.na(variant_umi) | variant_level_umi <= umi_cutoff) %>%
   nrow()
 
 # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
@@ -118,9 +119,9 @@ detected_mutations <- detected_mutations %>% add_row(
   Sample = Sample,
   Fragment = Fragment,
   Run = Run,
-  num_of_muts_UMI = length(which(data_filtered$variant_level_umi > 0)),
-  num_of_muts_NGS = length(which(data_filtered$variant_level_ngs > 0)),
-  num_of_deletions_NGS = length(which(data_filtered$variant_ngs == "D")),
+  num_of_muts_UMI = num_of_muts_UMI,
+  num_of_muts_NGS = num_of_muts_NGS,
+  num_of_deletions_NGS = num_of_deletions_NGS,
   num_of_observations = num_of_observations,
   positve = positive,
   negative = negative,
