@@ -200,7 +200,7 @@ if(nrow(UMI_samples) != 0){
     filter(str_detect(sample_fragment, available_sample_fragments_parsed))
   
   NGS_UMI_samples <- available_UMI_samples %>% 
-     merge(available_NGS_samples, by.x = c("position", "sample", "fragment"), by.y = c("pos", "sample", "fragment"), all = TRUE)
+     merge(available_NGS_samples, by = c("pos", "sample", "fragment"), all = TRUE)
   
   NGS_UMI_samples_parsed <- NGS_UMI_samples %>% 
     rename(
