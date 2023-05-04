@@ -69,7 +69,7 @@ for (i in 1:number_of_groups) {
   coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
   
   num_of_muts_UMI <- data_filtered %>% 
-    filter(variant_level_umi > 0) %>% 
+    filter(variant_level_umi > umi_cutoff) %>% 
   nrow()
 
 num_of_muts_NGS <- length(which(data_filtered$variant_level_ngs > 0))
