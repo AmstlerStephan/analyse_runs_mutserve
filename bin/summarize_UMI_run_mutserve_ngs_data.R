@@ -55,6 +55,12 @@ STR_end <- 2506 ### adapted to 2506 instead of 2505
 
 sample_sets <- c("AK|SAPHIR")
 
+
+# mutserve_summary <- "M:/Masterarbeit_GENEPI/20230324_mutserve/indel/HAC/run10_V14/barcode12/barcode12_mutserve.txt"
+# umi_cutoff <- 0.0085
+# ngs_data <- "M:/Masterarbeit_GENEPI/data_ngs/20221122_NGS_reference_data_SAPHIR.csv"
+# nanostat_summary <- "M:/Masterarbeit_GENEPI/20230324_QC_ALL/HAC/Nanostat_parsed_merged/all_runs_1000_9.tsv"
+
 mutserve_summary <-
   read_tsv(mutserve_summary, na = c("", "NA", "-"))
 
@@ -74,80 +80,25 @@ NGS <- read_csv(ngs_data) %>%
   mutate(fragment = as.character(fragment), 
          sample_fragment = paste(sample, fragment, sep = "_"))
 
-fwd_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-FWD`)) %>%
-  nrow()
-rev_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-REV`)) %>%
-  nrow()
 
-if(fwd_muts < rev_muts){
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-REV`,
-           minor_variant_level_umi = `MINOR-REV-PERCENT`,
-           top_variant_umi = `TOP-REV`,
-           top_variant_level_umi = `TOP-REV-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-} else {
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-FWD`,
-           minor_variant_level_umi = `MINOR-FWD-PERCENT`,
-           top_variant_umi = `TOP-FWD`,
-           top_variant_level_umi = `TOP-FWD-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-
-}
-
-### filter mutserve data
-### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
-## excluded () | minor_variant_level_umi < umi_cutoff)
-mutserve_raw_full_conversions <- mutserve_summary_parsed %>%
-  filter(ref_umi != top_variant_umi & ( is.na(minor_variant_umi) | minor_variant_level_umi < umi_cutoff )) %>%
+mutserve_combined <- mutserve_summary %>%
   mutate(
-    variant_level_umi = top_variant_level_umi,
-    variant_umi = top_variant_umi,
-  )
-
-mutserve_raw_variants <- mutserve_summary_parsed %>% 
-  anti_join(mutserve_raw_full_conversions, by = c("SAMPLE", "pos")) %>%
-  drop_na(minor_variant_umi) %>% 
-  mutate(
-    variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
-    variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
-  )
-
-### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
-### Variant level can be over 50% -> take Percentage and variant accordingly
-# mutserve_raw_variants <- mutserve_summary_parsed %>%
-#   drop_na(minor_variant_umi) %>%
-#   mutate(
-#     variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
-#     variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
-#   )
-
-mutserve_combined <- rbind(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
-  mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d"),
-         umi_cutoff = umi_cutoff)
+    variant_umi = Variant, 
+    variant_level_umi = VariantLevel,
+    coverage = Coverage,
+    ref_umi = Ref,
+    pos = Pos, 
+    barcode = str_extract(ID, "barcode\\d\\d"), 
+    umi_cutoff = umi_cutoff) %>% 
+  select(
+    barcode, 
+    pos, 
+    ref_umi,
+    variant_umi, 
+    variant_level_umi, 
+    coverage,
+    umi_cutoff,
+    )
 
 ### Join Barcodes and mutserve data
 
