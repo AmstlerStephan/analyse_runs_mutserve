@@ -142,7 +142,7 @@ for (i in 1:number_of_groups) {
         sep = "_"
       )
     ) +
-    coord_cartesian(ylim = c(0.00, 0.1)) +
+    coord_cartesian(ylim = c(0.00, 1)) +
     scale_y_continuous(breaks = seq(0, 0.1, by = 0.02))
 
   Percent_A <- median(data_filtered$Percent_A, na.rm = TRUE) / 100
