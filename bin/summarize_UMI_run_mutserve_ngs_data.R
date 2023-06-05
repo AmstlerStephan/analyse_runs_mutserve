@@ -62,7 +62,8 @@ sample_sets <- c("AK|SAPHIR")
 # nanostat_summary <- "M:/Masterarbeit_GENEPI/20230324_QC_ALL/HAC/Nanostat_parsed_merged/all_runs_1000_9.tsv"
 
 mutserve_summary <-
-  read_tsv(mutserve_summary, na = c("", "NA", "-"))
+  read_tsv(mutserve_summary, na = c("", "NA", "-")) %>%
+  filter(Filter == "PASS")
 
 barcodes <-
   read_tsv(nanostat_summary) %>%
