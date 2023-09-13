@@ -52,11 +52,11 @@ if (params.all_runs) {
     Channel.fromPath("${params.nanostat_folder}/run*/*${params.nanostat_tsv_pattern}", type: 'file')
     .set{ nanostat_summary_files }
 }else{
-    Channel.fromPath("${params.run_folder}/${params.ont_pl_folder}/**${params.mutserve_summary_pattern}", type: 'file')
+    Channel.fromPath("${params.run_folder}/*${params.mutserve_summary_pattern}", type: 'file')
     .view()
     .set{ mutserve_summary_files}
     
-    Channel.fromPath("${params.nanostat_folder}/**${params.nanostat_tsv_pattern}", type: 'file')
+    Channel.fromPath("${params.nanostat_folder}/*${params.nanostat_tsv_pattern}", type: 'file')
     .view()
     .set{ nanostat_summary_files }
 }
