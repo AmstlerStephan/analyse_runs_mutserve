@@ -74,78 +74,33 @@ NGS <- read_csv(ngs_data) %>%
   mutate(fragment = as.character(fragment), 
          sample_fragment = paste(sample, fragment, sep = "_"))
 
-fwd_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-FWD`)) %>%
-  nrow()
-rev_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-REV`)) %>%
-  nrow()
-
-if(fwd_muts < rev_muts){
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-REV`,
-           minor_variant_level_umi = `MINOR-REV-PERCENT`,
-           top_variant_umi = `TOP-REV`,
-           top_variant_level_umi = `TOP-REV-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-} else {
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-FWD`,
-           minor_variant_level_umi = `MINOR-FWD-PERCENT`,
-           top_variant_umi = `TOP-FWD`,
-           top_variant_level_umi = `TOP-FWD-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-
-}
+mutserve_summary_parsed <- mutserve_summary %>%
+  dplyr::rename(minor_variant_umi = `MINOR-FWD`,
+         minor_variant_level_umi = `MINOR-FWD-PERCENT`,
+         top_variant_umi = `TOP-FWD`,
+         top_variant_level_umi = `TOP-FWD-PERCENT`,
+         coverage = `COV-TOTAL`,
+         ref_umi = `REF`,
+         pos = POS) %>% 
+  select(
+    SAMPLE,
+    pos,
+    coverage,
+    ref_umi,
+    top_variant_umi,
+    minor_variant_umi,
+    top_variant_level_umi,
+    minor_variant_level_umi,
+    )
 
 ### filter mutserve data
-### filter for full conversions (called variant is not the reference AND has no minor variant level OR minor variant level is below a certain threshold)
-## excluded () | minor_variant_level_umi < umi_cutoff)
-mutserve_raw_full_conversions <- mutserve_summary_parsed %>%
-  filter(ref_umi != top_variant_umi & ( is.na(minor_variant_umi) | minor_variant_level_umi < umi_cutoff )) %>%
+mutserve_combined <- 
+  mutserve_summary_parsed %>% 
+  filter(minor_variant_level_umi > 0 | ref_umi != top_variant_umi) %>% 
   mutate(
-    variant_level_umi = top_variant_level_umi,
-    variant_umi = top_variant_umi,
-  )
-
-mutserve_raw_variants <- mutserve_summary_parsed %>% 
-  anti_join(mutserve_raw_full_conversions, by = c("SAMPLE", "pos")) %>%
-  drop_na(minor_variant_umi) %>% 
-  mutate(
-    variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
-    variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
-  )
-
-### drop all NA values, where no minor variant was found (Either full conversion or no variant at that position)
-### Variant level can be over 50% -> take Percentage and variant accordingly
-# mutserve_raw_variants <- mutserve_summary_parsed %>%
-#   drop_na(minor_variant_umi) %>%
-#   mutate(
-#     variant_level_umi = ifelse((ref_umi == minor_variant_umi), top_variant_level_umi, minor_variant_level_umi),
-#     variant_umi = as.character(ifelse((ref_umi == minor_variant_umi), top_variant_umi, minor_variant_umi))
-#   )
-
-mutserve_combined <- rbind(mutserve_raw_full_conversions, mutserve_raw_variants) %>%
+    variant_level_umi = ifelse(ref_umi != top_variant_umi, top_variant_level_umi, minor_variant_level_umi),
+    variant_umi = as.character(ifelse(ref_umi != top_variant_umi, top_variant_umi, minor_variant_umi))
+  ) %>%
   mutate(barcode = str_extract(SAMPLE, "barcode\\d\\d"),
          umi_cutoff = umi_cutoff)
 
@@ -192,18 +147,21 @@ if(nrow(UMI_samples) != 0){
   
   available_sample_fragments <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
   available_sample_fragments_parsed <- paste(available_sample_fragments, collapse = "|")
-
+  
   available_UMI_samples <- UMI_samples %>%
     filter(str_detect(sample_fragment, available_sample_fragments_parsed))
   
   available_NGS_samples <- NGS %>% 
     filter(str_detect(sample_fragment, available_sample_fragments_parsed))
   
+  NGS_UMI_samples_0 <- available_UMI_samples %>% 
+    merge(available_NGS_samples, by = c("pos", "sample", "fragment"), all = TRUE)
+  
   NGS_UMI_samples <- available_UMI_samples %>% 
-     merge(available_NGS_samples, by = c("pos", "sample", "fragment"), all = TRUE)
+    full_join(available_NGS_samples, by = c("pos", "sample", "fragment"), relationship = "one-to-one")
   
   NGS_UMI_samples_parsed <- NGS_UMI_samples %>% 
-    rename(
+    dplyr::rename(
       position = pos,
       variant_ngs = variant,
       variant_level_ngs = variant_level,
@@ -235,12 +193,18 @@ if(nrow(UMI_samples) != 0){
   # umi variant below the threshold, but keep all ngs variants
   # STR positions
   # full conversions that are not considered as variants in the ngs dataset
-  NGS_UMI_samples_parsed_filtered <- 
+  NGS_UMI_samples_parsed_filtered_0 <- 
     NGS_UMI_samples_parsed %>% 
     filter(variant_level_umi >= umi_cutoff | variant_level_ngs > 0) %>% 
     filter(position < STR_start | position > STR_end) %>% 
     filter(!(is.na(variant_ngs) & variant_level_umi == 1 ))
-
+  
+  NGS_UMI_samples_parsed_filtered <- 
+    NGS_UMI_samples_parsed %>% 
+    filter(variant_level_umi >= umi_cutoff | !is.na(variant_ngs)) %>% 
+    filter(position < STR_start | position > STR_end) %>% 
+    filter(variance_level_absolute_difference > -1 )
+  
   write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
   write_tsv(NGS_UMI_samples_parsed, "NGS_UMI_samples.tsv")
   write_tsv(NGS_UMI_samples_parsed_filtered, "NGS_UMI_samples_filtered.tsv")
