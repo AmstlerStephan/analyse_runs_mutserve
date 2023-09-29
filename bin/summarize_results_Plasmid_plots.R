@@ -150,53 +150,53 @@ for (i in 1:number_of_groups) {
   Sample_readable <- unique(data_filtered$Sample_readable, nmax = 1)[1]
 
 
-  density_plot_variant_levels <-
-    data_filtered %>%
-    ggplot() +
-    geom_density(
-      aes(variant_level_umi),
-      fill = "green",
-      color = "grey",
-      alpha = 0.4
-    ) +
-    geom_vline(xintercept = Percent_A, color = "red", alpha = 0.5) +
-    geom_vline(xintercept = Percent_B, color = "red", alpha = 0.5) +
-    labs(
-      x = "relative variant level",
-      y = "number of variants per level",
-      title = paste("number of variants per level",
-        "(",
-        "TypeA : TypeB",
-        Sample_readable,
-        Fragment,
-        ")",
-        sep = " "
-      )
-    ) +
-    annotate(
-      geom = "text",
-      x = Percent_A,
-      y = -0.5,
-      label = "Exp."
-    ) +
-    annotate(
-      geom = "text",
-      x = Percent_B,
-      y = -0.5,
-      label = "Exp."
-    ) +
-    coord_cartesian(xlim = c(0, 1)) +
-    scale_x_continuous(breaks = seq(0, 1, by = 0.1))
+  # density_plot_variant_levels <-
+  #   data_filtered %>%
+  #   ggplot() +
+  #   geom_density(
+  #     aes(variant_level_umi),
+  #     fill = "green",
+  #     color = "grey",
+  #     alpha = 0.4
+  #   ) +
+  #   geom_vline(xintercept = Percent_A, color = "red", alpha = 0.5) +
+  #   geom_vline(xintercept = Percent_B, color = "red", alpha = 0.5) +
+  #   labs(
+  #     x = "relative variant level",
+  #     y = "number of variants per level",
+  #     title = paste("number of variants per level",
+  #       "(",
+  #       "TypeA : TypeB",
+  #       Sample_readable,
+  #       Fragment,
+  #       ")",
+  #       sep = " "
+  #     )
+  #   ) +
+  #   annotate(
+  #     geom = "text",
+  #     x = Percent_A,
+  #     y = -0.5,
+  #     label = "Exp."
+  #   ) +
+  #   annotate(
+  #     geom = "text",
+  #     x = Percent_B,
+  #     y = -0.5,
+  #     label = "Exp."
+  #   ) +
+  #   coord_cartesian(xlim = c(0, 1)) +
+  #   scale_x_continuous(breaks = seq(0, 1, by = 0.1))
 
-  ggsave(
-    filename =
-      paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
-        ".jpeg"),
-    path = umi_density_plot_variant_levels_dir,
-    device = "jpg",
-    density_plot_variant_levels
-  )
+  # ggsave(
+  #   filename =
+  #     paste0(
+  #       paste(Fragment, Sample, Run, sep = "_"),
+  #       ".jpeg"),
+  #   path = umi_density_plot_variant_levels_dir,
+  #   device = "jpg",
+  #   density_plot_variant_levels
+  # )
 
   ggsave(
     filename =
