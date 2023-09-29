@@ -98,7 +98,7 @@ false_positive <- data_filtered %>%
 
 # Number of positions where a SNP was found in the NGS data, but not in the UMI data
 false_negative <- data_filtered %>%
-  filter(is.na(variant_umi) | variant_level_umi <= umi_cutoff) %>%
+  filter((is.na(variant_umi) | variant_level_umi <= umi_cutoff) & !is.na(variant_ngs)) %>%
   nrow()
 
 # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
