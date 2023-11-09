@@ -187,34 +187,36 @@ for (i in 1:number_of_groups) {
     ) +
     coord_cartesian(xlim = c(0, 1)) +
     scale_x_continuous(breaks = seq(0, 1, by = 0.1))
+# 
+# ggsave(
+#   filename =
+#     paste0(
+#       paste(Fragment, Sample, Run, sep = "_"),
+#       ".jpeg"),
+#   path = umi_density_plot_variant_levels_dir,
+#   device = "jpg",
+#   density_plot_variant_levels
+# )
+# 
+# ggsave(
+#   filename =
+#     paste0(
+#       paste(Fragment, Sample, Run, sep = "_"),
+#       ".jpeg"),
+#   path = umi_plot_variance_level_per_sample_dir,
+#   device = "jpg",
+#   plot_variance_level_per_sample
+# )
+# 
+# ggsave(
+#   filename =
+#     paste0(
+#       paste(Fragment, Sample, Run, sep = "_"),
+#       ".jpeg"),
+#   path = umi_plot_variance_level_per_sample_zoomed_dir,
+#   device = "jpg",
+#   plot_variance_level_per_sample_zoomed
+# )
 
-  ggsave(
-    filename =
-      paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
-        ".jpeg"),
-    path = umi_density_plot_variant_levels_dir,
-    device = "jpg",
-    density_plot_variant_levels
-  )
 
-  ggsave(
-    filename =
-      paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
-        ".jpeg"),
-    path = umi_plot_variance_level_per_sample_dir,
-    device = "jpg",
-    plot_variance_level_per_sample
-  )
-
-  ggsave(
-    filename =
-      paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
-        ".jpeg"),
-    path = umi_plot_variance_level_per_sample_zoomed_dir,
-    device = "jpg",
-    plot_variance_level_per_sample_zoomed
-  )
 }
