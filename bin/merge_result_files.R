@@ -12,7 +12,7 @@ parser <- add_argument(
 argv <- parse_args(parser)
 parsed_files <- argv$parsed_files
 
-merged_files <- lapply(parsed_files, read_tsv) %>%
+merged_files <- lapply(parsed_files, read_tsv, col_types = readr::cols(.default = readr::col_character())) %>%
   bind_rows()
 
 write_tsv(merged_files, "UMI_sequencing_mutserve_merged.tsv")
