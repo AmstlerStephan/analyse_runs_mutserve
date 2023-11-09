@@ -108,7 +108,7 @@ workflow ANALYSE_RUN {
         .set{ result_files }
 
         MERGE_RESULT_FILES( result_files, merge_result_files)
-        //READS_VS_BAM_FILE( MERGE_RESULT_FILES.out.umi_mutserve_merged, num_of_read_vs_bam_files )
+        READS_VS_BAM_FILE( MERGE_RESULT_FILES.out.umi_mutserve_merged, num_of_read_vs_bam_files )
     }
 
     SUMMARIZE_NGS_UMI_PLOTS( SUMMARIZE_RUN.out.ngs_raw, summarize_results_NGS_plots, plots, raw )
