@@ -13,7 +13,7 @@ parser <- add_argument(
 )
 parser <- add_argument(
   parser,
-  "--nanostat_summary",
+  "--sample_sheet",
   help = "Parsed nanostat summary of the run"
 )
 parser <- add_argument(
@@ -53,35 +53,46 @@ umi_cutoff <- ifelse(
 STR_start <- 2472
 STR_end <- 2506 ### adapted to 2506 instead of 2505
 
-sample_sets <- c("AK|SAPHIR")
-
 mutserve_summary <-
-  read_tsv(mutserve_summary, na = c("", "NA", "-"))
-
-barcodes <-
-  read_tsv(nanostat_summary) %>%
-  select(run:Sample, number_of_reads, mean_qual) %>%
+  read_tsv(mutserve_summary, na = c("", "NA", "-")) %>% 
   mutate(
-    sample = str_sub(Sample, end = -6),
-    fragment = str_sub(Sample, start = -4)
-  ) %>%
-  dplyr::rename(
-    sample_fragment = Sample,
-    Q_score = mean_qual
+    fragment = 5104
   )
 
-NGS <- read_csv(ngs_data) %>%
-  mutate(fragment = as.character(fragment), 
-         sample_fragment = paste(sample, fragment, sep = "_"))
+barcodes <-
+  read_tsv(sample_sheet) %>%
+  mutate(
+    barcode = str_replace(Barcode, "NB", "barcode"), 
+    sample = Sample, 
+    fragment = 5104
+  ) %>% 
+  select(!c(Barcode, Sample)) 
+
+NGS <- read_tsv(ngs_data) %>%
+  filter(
+    Filter == "PASS" & VariantLevel >= 0.0085
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    sample = str_split(ID, "\\.")[[1]][1],
+    fragment = 5104,
+    major_minor = paste(MajorBase, MinorBase, sep = "/"), 
+  ) %>% 
+  dplyr::rename(
+    pos = Pos, 
+    ref = Ref, 
+    variant = Variant, 
+    variant_level = VariantLevel
+  )
 
 mutserve_summary_parsed <- mutserve_summary %>%
   dplyr::rename(minor_variant_umi = `MINOR-FWD`,
-         minor_variant_level_umi = `MINOR-FWD-PERCENT`,
-         top_variant_umi = `TOP-FWD`,
-         top_variant_level_umi = `TOP-FWD-PERCENT`,
-         coverage = `COV-TOTAL`,
-         ref_umi = `REF`,
-         pos = POS) %>% 
+                minor_variant_level_umi = `MINOR-FWD-PERCENT`,
+                top_variant_umi = `TOP-FWD`,
+                top_variant_level_umi = `TOP-FWD-PERCENT`,
+                coverage = `COV-TOTAL`,
+                ref_umi = `REF`,
+                pos = POS) %>% 
   select(
     SAMPLE,
     pos,
@@ -91,7 +102,7 @@ mutserve_summary_parsed <- mutserve_summary %>%
     minor_variant_umi,
     top_variant_level_umi,
     minor_variant_level_umi,
-    )
+  )
 
 ### filter mutserve data
 mutserve_combined <- 
@@ -106,59 +117,30 @@ mutserve_combined <-
 
 ### Join Barcodes and mutserve data
 
-UMI <- mutserve_combined %>%
+UMI_samples <- mutserve_combined %>%
   inner_join(barcodes, by = c("barcode"))
-
-UMI_plasmids <- UMI %>%
-  filter(grepl("A_B", sample))
-
-if(nrow(UMI_plasmids) != 0){
-  UMI_plasmids_parsed <- UMI_plasmids %>%
-    separate(sample,
-             c(NA, NA, "Percent_A", "Percent_B"),
-             sep = "_",
-             remove = FALSE
-    ) %>%
-    mutate(
-      Percent_A = as.numeric(Percent_A) / 10,
-      Percent_B = as.numeric(Percent_B) / 10,
-      Sample_readable = paste(Percent_A, Percent_B, sep = ":")
-    )
-  
-  UMI_plasmids_filtered <- UMI_plasmids_parsed %>%
-    filter(variant_level_umi >= umi_cutoff) %>%
-    filter(pos < STR_start | pos > STR_end)
-  
-  write_tsv(UMI_plasmids_parsed, "UMI_sequencing_mutserve_plasmids.tsv")
-  write_tsv(UMI_plasmids_filtered, "UMI_sequencing_mutserve_plasmids_filtered.tsv")
-  
-}
-
-
-
-### Creating the NGS data
-UMI_samples <- UMI %>%
-  filter(grepl(sample_sets, sample))
 
 if(nrow(UMI_samples) != 0){
   
-  NGS_sample_fragment_groups <- unique(NGS$sample_fragment)
-  UMI_sample_fragment_groups <- unique(UMI_samples$sample_fragment) 
+  NGS_sample_fragment_groups <- unique(NGS$sample)
+  UMI_sample_fragment_groups <- unique(UMI_samples$sample) 
   
-  available_sample_fragments <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
-  available_sample_fragments_parsed <- paste(available_sample_fragments, collapse = "|")
+  available_samples <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
+  available_samples_parsed <- paste(available_samples, collapse = "|")
   
   available_UMI_samples <- UMI_samples %>%
-    filter(str_detect(sample_fragment, available_sample_fragments_parsed))
+    filter(str_detect(sample, available_samples_parsed))
   
   available_NGS_samples <- NGS %>% 
-    filter(str_detect(sample_fragment, available_sample_fragments_parsed))
+    filter(str_detect(sample, available_samples_parsed))
   
   NGS_UMI_samples_0 <- available_UMI_samples %>% 
-    merge(available_NGS_samples, by = c("pos", "sample", "fragment"), all = TRUE)
+    merge(available_NGS_samples, by = c("pos", "sample"), all = TRUE)
   
+  
+  ### CONTINUE HERE -> Too many matches
   NGS_UMI_samples <- available_UMI_samples %>% 
-    full_join(available_NGS_samples, by = c("pos", "sample", "fragment"), relationship = "one-to-one")
+    full_join(available_NGS_samples, relationship = "one-to-one")
   
   NGS_UMI_samples_parsed <- NGS_UMI_samples %>% 
     dplyr::rename(
@@ -170,7 +152,6 @@ if(nrow(UMI_samples) != 0){
     select(
       sample,
       fragment,
-      run,
       position,
       ref_umi,
       variant_umi,
@@ -178,9 +159,7 @@ if(nrow(UMI_samples) != 0){
       ref_ngs,
       variant_ngs,
       variant_level_ngs,
-      number_of_reads,
       coverage,
-      Q_score,
       umi_cutoff,
     ) %>%
     mutate(
@@ -206,3 +185,4 @@ if(nrow(UMI_samples) != 0){
 }
 
 write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
+
