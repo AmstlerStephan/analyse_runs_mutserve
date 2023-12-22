@@ -49,14 +49,6 @@ if (params.all_runs) {
     .set{ mutserve_summary_files}
 }
 
-mutserve_summary_files
-.map{
-    mutserve_summary_path ->
-    run = (mutserve_summary_path =~ /run\d*_*V*\d*/)[0]
-    tuple( run, mutserve_summary_path )
-}
-.set{ run_summaries }
-
 
 
 include {SUMMARIZE_RUN} from '../processes/summarize_run.nf'
@@ -69,7 +61,7 @@ include {SUMMARIZE_NGS_UMI as SUMMARIZE_NGS_UMI_PLOTS;
 
 workflow ANALYSE_RUN {
 
-    SUMMARIZE_RUN( run_summaries, sample_sheet, ngs_data, summarize_UMI_run_mutserve_ngs_data )
+    SUMMARIZE_RUN( mutserve_summary_files, sample_sheet, ngs_data, summarize_UMI_run_mutserve_ngs_data )
 
     if(params.merge_umi_result_file){
         SUMMARIZE_RUN.out.umi_all
