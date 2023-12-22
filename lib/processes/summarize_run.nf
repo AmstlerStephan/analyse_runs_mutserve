@@ -1,7 +1,8 @@
 process SUMMARIZE_RUN {
     publishDir "${params.output}/umi_summary_files_per_run/${run}/", mode: 'copy'
   input:
-    tuple val( run ), path( mutserve_summary ), path( nanostat_summary )
+    tuple val( run ), path( mutserve_summary )
+    path sample_sheet
     path ngs_data
     path summarize_UMI_run_mutserve_ngs_data_R
   output:
@@ -14,8 +15,7 @@ process SUMMARIZE_RUN {
   script:
   """
     Rscript ${summarize_UMI_run_mutserve_ngs_data_R} \
-    --run ${run} \
-    --nanostat_summary ${nanostat_summary} \
+    --sample_sheet ${sample_sheet} \
     --mutserve_summary ${mutserve_summary} \
     --ngs_data ${ngs_data} \
     --umi_cutoff_R9 ${params.umi_cutoff_R9} \

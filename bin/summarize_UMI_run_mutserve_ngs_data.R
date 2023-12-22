@@ -7,11 +7,6 @@ library(argparser)
 parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
-  "--run",
-  help = "Run"
-)
-parser <- add_argument(
-  parser,
   "--sample_sheet",
   help = "Parsed nanostat summary of the run"
 )
@@ -38,8 +33,7 @@ parser <- add_argument(
 
 
 argv <- parse_args(parser)
-run <- argv$run
-nanostat_summary <- argv$nanostat_summary
+sample_sheet <- argv$sample_sheet
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
 umi_cutoff <- ifelse(
@@ -47,11 +41,6 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_V14,
   argv$umi_cutoff_R9
 )
-
-umi_cutoff <- 0.0085
-mutserve_summary <- "analyse_runs_mutserve/1000G/summary_mutserve_consensus.txt"
-sample_sheet <- "analyse_runs_mutserve/1000G/Barcode_Sample_overview.tsv"
-ngs_data <- "analyse_runs_mutserve/1000G/kiv2_signature_approach.txt"
 
 ### define parameters
 STR_start <- 2472
