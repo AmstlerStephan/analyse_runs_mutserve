@@ -17,16 +17,14 @@ ngs_data <-
   read_tsv(ngs_umi_samples)
 
 groups <- ngs_data %>%
-  group_by(sample, fragment, run) %>%
-  summarize() %>%
-  drop_na()
+  select(sample, fragment) %>%
+  unique()
 
 number_of_groups <- nrow(groups)
 
 detected_mutations <- tibble(
   Sample = character(),
   Fragment = integer(),
-  Run = character(),
   num_of_muts_UMI = numeric(),
   num_of_muts_NGS = numeric(),
   num_of_deletions_NGS = numeric(),
@@ -55,89 +53,81 @@ for (i in 1:number_of_groups) {
   
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
-  Run <- groups[[3]][i]
   
   data_filtered <- ngs_data %>%
     filter(sample == Sample, fragment == Fragment)
   
   num_of_observations <- nrow(data_filtered)
   
-  num_of_reads <- mean(data_filtered$number_of_reads, na.rm = TRUE)
-  
-  Q_score <- mean(data_filtered$Q_score, na.rm = TRUE)
-  
   coverage <- ceiling(mean(data_filtered$coverage, na.rm = TRUE))
   
   num_of_muts_UMI <- data_filtered %>% 
     filter(!is.na(variant_level_umi)) %>% 
-  nrow()
-
-num_of_muts_NGS <- length(which(data_filtered$variant_level_ngs > 0))
-num_of_deletions_NGS <- length(which(data_filtered$variant_ngs == "D"))
-
-positive <- data_filtered %>%
-  filter(variant_level_ngs > 0) %>%
-  nrow()
-
-# OR all positions - positions with SNP
-# Does not include Deletions or Insertions 
-negative <- as.numeric(Fragment) - positive
-
-# Number of positions that are recognized of having the same SNP
-true_positive <- data_filtered %>%
-  filter(variant_level_umi >= umi_cutoff) %>% 
-  filter(!is.na(variant_ngs)) %>%
-  filter(as.character(variant_umi) == as.character(variant_ngs)) %>%
-  nrow()
-
-# Number of positions where a SNP was found in the UMI data, but not or a different in the NGS data
-false_positive <- data_filtered %>%
-  filter(is.na(variant_ngs) |
-           as.character(variant_umi) != as.character(variant_ngs)) %>%
-  nrow()
-
-# Number of positions where a SNP was found in the NGS data, but not in the UMI data
-false_negative <- data_filtered %>%
-  filter((is.na(variant_umi) | variant_level_umi <= umi_cutoff) & !is.na(variant_ngs)) %>%
-  nrow()
-
-# All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
-true_negative <-
-  as.numeric(Fragment) - false_positive - false_negative - true_positive
-
-# Specificity, Precision, Recall and Sensitivity ( + F1-score)
-sensitivity_true_positive_rate <- true_positive / (true_positive + false_negative)
-specificity_true_negative_rate <- true_negative / (true_negative + false_positive)
-precision_positive_predictive_value <-
-  true_positive / (true_positive + false_positive)
-f1_score <-
-  2 * precision_positive_predictive_value * sensitivity_true_positive_rate / (precision_positive_predictive_value + sensitivity_true_positive_rate)
-f1_score_control <-
-  true_positive / (true_positive + 0.5 * (false_positive + false_negative))
-
-detected_mutations <- detected_mutations %>% add_row(
-  Sample = Sample,
-  Fragment = Fragment,
-  Run = Run,
-  num_of_muts_UMI = num_of_muts_UMI,
-  num_of_muts_NGS = num_of_muts_NGS,
-  num_of_deletions_NGS = num_of_deletions_NGS,
-  num_of_observations = num_of_observations,
-  positve = positive,
-  negative = negative,
-  true_positive = true_positive,
-  true_negative = true_negative,
-  false_positive = false_positive,
-  false_negative = false_negative,
-  sensitivity_true_positive_rate = sensitivity_true_positive_rate,
-  specificity_true_negative_rate = specificity_true_negative_rate,
-  precision_positive_predictive_value = precision_positive_predictive_value,
-  f1_score = f1_score,
-  f1_score_control = f1_score_control,
-  num_of_reads = num_of_reads,
-  coverage = coverage,
-  Q_score = Q_score
-)
+    nrow()
+  
+  num_of_muts_NGS <- length(which(data_filtered$variant_level_ngs > 0))
+  num_of_deletions_NGS <- length(which(data_filtered$variant_ngs == "D"))
+  
+  positive <- data_filtered %>%
+    filter(variant_level_ngs > 0) %>%
+    nrow()
+  
+  # OR all positions - positions with SNP
+  # Does not include Deletions or Insertions 
+  negative <- as.numeric(Fragment) - positive
+  
+  # Number of positions that are recognized of having the same SNP
+  true_positive <- data_filtered %>%
+    filter(variant_level_umi >= umi_cutoff) %>% 
+    filter(!is.na(variant_ngs)) %>%
+    filter(as.character(variant_umi) == as.character(variant_ngs)) %>%
+    nrow()
+  
+  # Number of positions where a SNP was found in the UMI data, but not or a different in the NGS data
+  false_positive <- data_filtered %>%
+    filter(is.na(variant_ngs) |
+             as.character(variant_umi) != as.character(variant_ngs)) %>%
+    nrow()
+  
+  # Number of positions where a SNP was found in the NGS data, but not in the UMI data
+  false_negative <- data_filtered %>%
+    filter((is.na(variant_umi) | variant_level_umi <= umi_cutoff) & !is.na(variant_ngs)) %>%
+    nrow()
+  
+  # All positions - Number of positions where a variant was found in the NGS data (!is.na(NGS))
+  true_negative <-
+    as.numeric(Fragment) - false_positive - false_negative - true_positive
+  
+  # Specificity, Precision, Recall and Sensitivity ( + F1-score)
+  sensitivity_true_positive_rate <- true_positive / (true_positive + false_negative)
+  specificity_true_negative_rate <- true_negative / (true_negative + false_positive)
+  precision_positive_predictive_value <-
+    true_positive / (true_positive + false_positive)
+  f1_score <-
+    2 * precision_positive_predictive_value * sensitivity_true_positive_rate / (precision_positive_predictive_value + sensitivity_true_positive_rate)
+  f1_score_control <-
+    true_positive / (true_positive + 0.5 * (false_positive + false_negative))
+  
+  detected_mutations <- detected_mutations %>% add_row(
+    Sample = Sample,
+    Fragment = Fragment,
+    num_of_muts_UMI = num_of_muts_UMI,
+    num_of_muts_NGS = num_of_muts_NGS,
+    num_of_deletions_NGS = num_of_deletions_NGS,
+    num_of_observations = num_of_observations,
+    positve = positive,
+    negative = negative,
+    true_positive = true_positive,
+    true_negative = true_negative,
+    false_positive = false_positive,
+    false_negative = false_negative,
+    sensitivity_true_positive_rate = sensitivity_true_positive_rate,
+    specificity_true_negative_rate = specificity_true_negative_rate,
+    precision_positive_predictive_value = precision_positive_predictive_value,
+    f1_score = f1_score,
+    f1_score_control = f1_score_control,
+    coverage = coverage,
+  )
 }
 
 write_tsv(detected_mutations, "umi_ngs_quality_parameters.tsv")
