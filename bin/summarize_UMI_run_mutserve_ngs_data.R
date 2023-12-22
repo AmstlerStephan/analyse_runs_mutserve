@@ -172,5 +172,5 @@ if(nrow(UMI_samples) != 0){
   
 }
 
-write_tsv(UMI, "UMI_sequencing_mutserve_all_.tsv")
+write_tsv(UMI_samples, "UMI_sequencing_mutserve_all_.tsv")
 
