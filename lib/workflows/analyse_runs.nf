@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 requiredParams = [
-    'run_folder', 'nanostat_folder', 'nanostat_tsv_pattern', 'mutserve_summary_pattern', 'ngs_data', 'output'
+    'run_folder', 'sample_sheet', 'mutserve_summary_pattern', 'ngs_data', 'output'
 ]
 
 for (param in requiredParams) {
