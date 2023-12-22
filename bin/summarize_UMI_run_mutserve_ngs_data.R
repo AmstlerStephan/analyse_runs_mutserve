@@ -1,7 +1,6 @@
 library(plyr)
 library(tidyr)
 library(readr)
-library(jsonlite)
 library(tidyverse)
 library(argparser)
 
@@ -48,6 +47,11 @@ umi_cutoff <- ifelse(
   argv$umi_cutoff_V14,
   argv$umi_cutoff_R9
 )
+
+umi_cutoff <- 0.0085
+mutserve_summary <- "analyse_runs_mutserve/1000G/summary_mutserve_consensus.txt"
+sample_sheet <- "analyse_runs_mutserve/1000G/Barcode_Sample_overview.tsv"
+ngs_data <- "analyse_runs_mutserve/1000G/kiv2_signature_approach.txt"
 
 ### define parameters
 STR_start <- 2472
@@ -132,15 +136,14 @@ if(nrow(UMI_samples) != 0){
     filter(str_detect(sample, available_samples_parsed))
   
   available_NGS_samples <- NGS %>% 
-    filter(str_detect(sample, available_samples_parsed))
-  
-  NGS_UMI_samples_0 <- available_UMI_samples %>% 
-    merge(available_NGS_samples, by = c("pos", "sample"), all = TRUE)
-  
-  
+    filter(str_detect(sample, available_samples_parsed)) %>% 
+    group_by(sample, pos) %>% 
+    arrange(variant_level) %>% 
+    slice_head(n = 1)
+
   ### CONTINUE HERE -> Too many matches
   NGS_UMI_samples <- available_UMI_samples %>% 
-    full_join(available_NGS_samples, relationship = "one-to-one")
+    full_join(available_NGS_samples, by = c("sample", "pos", "fragment"), relationship = "one-to-one")
   
   NGS_UMI_samples_parsed <- NGS_UMI_samples %>% 
     dplyr::rename(
