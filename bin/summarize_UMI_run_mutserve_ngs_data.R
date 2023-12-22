@@ -8,7 +8,7 @@ parser <- arg_parser("Commandline parser")
 parser <- add_argument(
   parser,
   "--sample_sheet",
-  help = "Parsed nanostat summary of the run"
+  help = "sample sheet (tsv)"
 )
 parser <- add_argument(
   parser,
@@ -36,11 +36,7 @@ argv <- parse_args(parser)
 sample_sheet <- argv$sample_sheet
 mutserve_summary <- argv$mutserve_summary
 ngs_data <- argv$ngs_data
-umi_cutoff <- ifelse(
-  str_detect(run, "V14"),
-  argv$umi_cutoff_V14,
-  argv$umi_cutoff_R9
-)
+umi_cutoff <- argv$umi_cutoff_V14
 
 ### define parameters
 STR_start <- 2472
@@ -170,11 +166,11 @@ if(nrow(UMI_samples) != 0){
     filter(position < STR_start | position > STR_end) %>% 
     filter(variance_level_absolute_difference > -1 )
   
-  write_tsv(UMI_samples, paste0("UMI_sequencing_samples_corresponding_position_", run, ".tsv"))
+  write_tsv(UMI_samples, "UMI_sequencing_samples_corresponding_position.tsv")
   write_tsv(NGS_UMI_samples_parsed, "NGS_UMI_samples.tsv")
   write_tsv(NGS_UMI_samples_parsed_filtered, "NGS_UMI_samples_filtered.tsv")
   
 }
 
-write_tsv(UMI, paste0("UMI_sequencing_mutserve_all_", run, ".tsv"))
+write_tsv(UMI, "UMI_sequencing_mutserve_all_.tsv")
 

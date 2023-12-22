@@ -1,5 +1,5 @@
 process SUMMARIZE_RUN {
-    publishDir "${params.output}/umi_summary_files_per_run/${run}/", mode: 'copy'
+    publishDir "${params.output}/umi_summary_files_per_run/${params.run}/", mode: 'copy'
   input:
     tuple path( mutserve_summary )
     path sample_sheet

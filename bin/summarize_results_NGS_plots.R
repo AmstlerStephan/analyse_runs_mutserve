@@ -32,11 +32,11 @@ dir.create(umi_bland_altman_dir)
 
 ### functions
 
-create_bland_altman <- function(data, path, Fragment, Sample, Run) {
+create_bland_altman <- function(data, path, Fragment, Sample) {
   jpeg(
     file = paste(
       path,
-      paste(Fragment, Sample, Run, "bland_altman.jpg", sep = "_"),
+      paste(Fragment, Sample, "bland_altman.jpg", sep = "_"),
       sep = "/"
     ),
     width = 10,
@@ -77,7 +77,7 @@ create_bland_altman <- function(data, path, Fragment, Sample, Run) {
 }
 
 groups <- ngs_data %>%
-  group_by(sample, fragment, run) %>%
+  group_by(sample, fragment) %>%
   summarize() %>%
   drop_na()
 
@@ -91,7 +91,6 @@ for (i in 1:number_of_groups) {
 
   Sample <- groups[[1]][i]
   Fragment <- groups[[2]][i]
-  Run <- groups[[3]][i]
 
   print(Sample)
   print(Fragment)
@@ -114,7 +113,6 @@ for (i in 1:number_of_groups) {
       title = paste(
         Sample,
         Fragment,
-        Run,
         "Variant levels of both Sequencing technology",
         sep = "_"
       )
@@ -186,14 +184,13 @@ for (i in 1:number_of_groups) {
     data_filtered,
     umi_bland_altman_dir,
     Fragment,
-    Sample,
-    Run
+    Sample
   )
 
   ggsave(
     filename =
       paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
+        paste(Fragment, Sample, sep = "_"),
         ".jpeg"),
     path = umi_comparison_variant_levels_ngs_dir,
     device = "jpg",
@@ -203,7 +200,7 @@ for (i in 1:number_of_groups) {
   ggsave(
     filename =
       paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
+        paste(Fragment, Sample, sep = "_"),
         ".jpeg"),
     path = umi_comparison_variant_levels_ngs_per_position_dir,
     device = "jpg",
@@ -213,7 +210,7 @@ for (i in 1:number_of_groups) {
   ggsave(
     filename =
       paste0(
-        paste(Fragment, Sample, Run, sep = "_"),
+        paste(Fragment, Sample, sep = "_"),
         ".jpeg"),
     path = umi_density_plot_variant_levels_dir,
     device = "jpg",
