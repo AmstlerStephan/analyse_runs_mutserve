@@ -149,6 +149,7 @@ if(nrow(UMI_samples) != 0){
       variant_level_ngs,
       coverage,
       umi_cutoff,
+      type_annot
     ) %>%
     mutate(
       variant_level_umi = coalesce(variant_level_umi, 0),
