@@ -159,11 +159,12 @@ if(nrow(UMI_samples) != 0){
   # filter for:
   # umi variant below the threshold, but keep all ngs variants
   # STR positions
-  # full conversions that are not considered as variants in the ngs dataset
+  # full conversions that are not considered variants in the ngs dataset
+  # included the filter for exactly 0.0008 variant level. They are not filtered even though they fulfill all criteria to be excluded 
   NGS_UMI_samples_parsed_filtered <- 
     NGS_UMI_samples_parsed %>% 
     filter(variant_level_umi >= umi_cutoff | !is.na(variant_ngs)) %>% 
-    filter(variant_level_umi != 0.008) %>%
+    filter(variant_level_umi != 0.0008) %>%
     filter(position < STR_start | position > STR_end) %>% 
     filter(variance_level_absolute_difference > -1 )
   
