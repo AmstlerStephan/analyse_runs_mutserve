@@ -163,6 +163,7 @@ if(nrow(UMI_samples) != 0){
   NGS_UMI_samples_parsed_filtered <- 
     NGS_UMI_samples_parsed %>% 
     filter(variant_level_umi >= umi_cutoff | !is.na(variant_ngs)) %>% 
+    filter(variant_level_umi != 0.008) %>%
     filter(position < STR_start | position > STR_end) %>% 
     filter(variance_level_absolute_difference > -1 )
   
