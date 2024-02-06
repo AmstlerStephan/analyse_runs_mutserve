@@ -168,7 +168,7 @@ if(nrow(UMI_samples) != 0){
     filter(position < STR_start | position > STR_end) %>% 
     filter(variance_level_absolute_difference > -1 ) %>% 
     filter(variant_level_umi != 0.0008) %>%
-    filter(type_annot != "type_b")
+    filter(!(type_annot == "type_b" & !is.na(type_annot)))
   
   write_tsv(UMI_samples, "UMI_sequencing_samples_corresponding_position.tsv")
   write_tsv(NGS_UMI_samples_parsed, "NGS_UMI_samples.tsv")
