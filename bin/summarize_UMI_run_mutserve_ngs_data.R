@@ -66,7 +66,6 @@ barcodes <-
     fragment = str_sub(Sample, start = -4)
   ) %>%
   dplyr::rename(
-    sample_fragment = Sample,
     Q_score = mean_qual
   )
 
@@ -147,25 +146,23 @@ if(nrow(UMI_plasmids) != 0){
   
 }
 
-
-
 ### Creating the NGS data
 UMI_samples <- UMI %>%
   filter(grepl(sample_sets, sample))
 
 if(nrow(UMI_samples) != 0){
   
-  NGS_sample_fragment_groups <- unique(NGS$sample_fragment)
-  UMI_sample_fragment_groups <- unique(UMI_samples$sample_fragment) 
+  NGS_sample_fragment_groups <- unique(NGS$sample)
+  UMI_sample_fragment_groups <- unique(UMI_samples$sample) 
   
   available_sample_fragments <- intersect(NGS_sample_fragment_groups, UMI_sample_fragment_groups)
   available_sample_fragments_parsed <- paste(available_sample_fragments, collapse = "|")
   
   available_UMI_samples <- UMI_samples %>%
-    filter(str_detect(sample_fragment, available_sample_fragments_parsed))
+    filter(str_detect(sample, available_sample_fragments_parsed))
   
   available_NGS_samples <- NGS %>% 
-    filter(str_detect(sample_fragment, available_sample_fragments_parsed))
+    filter(str_detect(sample, available_sample_fragments_parsed))
   
   NGS_UMI_samples_0 <- available_UMI_samples %>% 
     merge(available_NGS_samples, by = c("pos", "sample", "fragment"), all = TRUE)
