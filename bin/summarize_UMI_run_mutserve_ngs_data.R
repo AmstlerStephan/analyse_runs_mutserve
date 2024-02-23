@@ -70,9 +70,22 @@ barcodes <-
     Q_score = mean_qual
   )
 
-NGS <- read_csv(ngs_data) %>%
-  mutate(fragment = as.character(fragment), 
-         sample_fragment = paste(sample, fragment, sep = "_"))
+NGS <- read_tsv(ngs_data) %>%
+  filter(
+    Filter == "PASS" & VariantLevel >= 0.0085
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    sample = str_split(ID, "\\.")[[1]][1],
+    fragment = 5104,
+    major_minor = paste(MajorBase, MinorBase, sep = "/"), 
+  ) %>% 
+  dplyr::rename(
+    pos = Pos, 
+    ref = Ref, 
+    variant = Variant, 
+    variant_level = VariantLevel
+  )
 
 fwd_muts <- mutserve_summary %>% 
   filter(!is.na(`TOP-FWD`)) %>%
