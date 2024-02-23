@@ -60,7 +60,8 @@ mutserve_summary <-
 
 barcodes <-
   read_tsv(nanostat_summary) %>%
-  select(run:Sample, number_of_reads, mean_qual) %>%
+  select(run:Sample, number_of_reads, mean_qual)  %>%
+  drop_na(Sample) %>%
   mutate(
     sample = str_sub(Sample, end = -6),
     fragment = str_sub(Sample, start = -4)
