@@ -87,68 +87,24 @@ NGS <- read_tsv(ngs_data) %>%
     variant_level = VariantLevel
   )
 
-fwd_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-FWD`)) %>%
-  nrow()
-rev_muts <- mutserve_summary %>% 
-  filter(!is.na(`TOP-REV`)) %>%
-  nrow()
-
-if(fwd_muts < rev_muts){
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-REV`,
-           minor_variant_level_umi = `MINOR-REV-PERCENT`,
-           top_variant_umi = `TOP-REV`,
-           top_variant_level_umi = `TOP-REV-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-} else {
-  mutserve_summary_parsed <- mutserve_summary %>%
-    mutate(minor_variant_umi = `MINOR-FWD`,
-           minor_variant_level_umi = `MINOR-FWD-PERCENT`,
-           top_variant_umi = `TOP-FWD`,
-           top_variant_level_umi = `TOP-FWD-PERCENT`,
-           coverage = `COV-TOTAL`,
-           ref_umi = `REF`,
-           pos = POS) %>% 
-    select(minor_variant_umi,
-           minor_variant_level_umi,
-           top_variant_umi,
-           top_variant_level_umi,
-           coverage,
-           ref_umi,
-           pos,
-           SAMPLE)
-
-}
-
-#mutserve_summary_parsed <- mutserve_summary %>%
-#  dplyr::rename(minor_variant_umi = `MINOR-FWD`,
-#         minor_variant_level_umi = `MINOR-FWD-PERCENT`,
-#         top_variant_umi = `TOP-FWD`,
-#         top_variant_level_umi = `TOP-FWD-PERCENT`,
-#         coverage = `COV-TOTAL`,
-#         ref_umi = `REF`,
-#         pos = POS) %>% 
-#  select(
-#    SAMPLE,
-#    pos,
-#    coverage,
-#    ref_umi,
-#    top_variant_umi,
-#    minor_variant_umi,
-#    top_variant_level_umi,
-#    minor_variant_level_umi,
-#    )
+mutserve_summary_parsed <- mutserve_summary %>%
+  dplyr::rename(minor_variant_umi = `MINOR-FWD`,
+                minor_variant_level_umi = `MINOR-FWD-PERCENT`,
+                top_variant_umi = `TOP-FWD`,
+                top_variant_level_umi = `TOP-FWD-PERCENT`,
+                coverage = `COV-TOTAL`,
+                ref_umi = `REF`,
+                pos = POS) %>% 
+  select(
+    SAMPLE,
+    pos,
+    coverage,
+    ref_umi,
+    top_variant_umi,
+    minor_variant_umi,
+    top_variant_level_umi,
+    minor_variant_level_umi,
+  )
 
 ### filter mutserve data
 mutserve_combined <- 
